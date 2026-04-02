@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Race — Stealth Games</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+  }
+  h1 {
+    font-size: 2rem;
+    color: #00aaff;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    text-shadow: 0 0 20px #00aaff44;
+  }
+  .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 24px; }
+  .hud {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    color: #888;
+  }
+  .hud span { color: #00aaff; font-weight: bold; font-size: 1.1rem; }
+  #passage-box {
+    width: min(680px, 100%);
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-size: 1.15rem;
+    line-height: 1.9;
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+    position: relative;
+    min-height: 90px;
+  }
+  .char { color: #555; position: relative; }
+  .char.correct { color: #00aaff; }
+  .char.wrong { color: #ff4444; background: #1a0000; border-radius: 2px; }
+  .char.cursor::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #00aaff;
+    animation: blink 0.8s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  #input-field {
+    width: min(680px, 100%);
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 16px;
+    outline: none;
+    caret-color: #00aaff;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  #input-field:focus { border-color: #00aaff55; }
+  #input-field:disabled { opacity: 0.4; cursor: not-allowed; }
+  .controls { display: flex; gap: 12px; margin-bottom: 12px; }
+  button {
+    background: transparent;
+    border: 1px solid #00aaff;
+    color: #00aaff;
+    padding: 8px 20px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  button:hover { background: #00aaff22; }
+  .diff-btn {
+    border-color: #444; color: #666;
+    padding: 6px 14px; font-size: 0.8rem; letter-spacing: 1px;
+  }
+  .diff-btn.active { border-color: #00aaff; color: #00aaff; }
+  .diff-select { display: flex; gap: 8px; margin-bottom: 20px; }
+  #result-box {
+    display: none;
+    width: min(680px, 100%);
+    background: #111;
+    border: 1px solid #00aaff44;
+    border-radius: 10px;
+    padding: 20px 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  #result-box h2 { font-size: 1.6rem; color: #00aaff; letter-spacing: 4px; margin-bottom: 12px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .stat { color: #888; font-size: 0.85rem; }
+  .stat span { display: block; font-size: 1.4rem; color: #00aaff; font-weight: bold; }
+  a.back {
+    color: #444;
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    margin-top: 10px;
+    transition: color 0.2s;
+  }
+  a.back:hover { color: #00aaff; }
+  #progress-bar-wrap {
+    width: min(680px, 100%);
+    height: 3px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  #progress-bar {
+    height: 100%;
+    background: #00aaff;
+    width: 0%;
+    transition: width 0.1s;
+  }
+</style>
+</head>
+<body>
+<h1>Typing Race</h1>
+<p class="subtitle">Type as fast and accurately as you can</p>
+
+<div class="diff-select">
+  <button class="diff-btn active" onclick="setDiff('easy',this)">Easy</button>
+  <button class="diff-btn" onclick="setDiff('normal',this)">Normal</button>
+  <button class="diff-btn" onclick="setDiff('hard',this)">Hard</button>
+</div>
+
+<div class="hud">
+  WPM: <span id="wpm">0</span>
+  &nbsp;|&nbsp;
+  ACC: <span id="acc">100%</span>
+  &nbsp;|&nbsp;
+  Time: <span id="timer">0s</span>
+</div>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<div id="passage-box"></div>
+<input id="input-field" type="text" placeholder="Click here and start typing..." autocomplete="off" spellcheck="false">
+
+<div class="controls">
+  <button onclick="newGame()">New Passage</button>
+</div>
+
+<div id="result-box">
+  <h2>COMPLETE!</h2>
+  <div class="stats-grid">
+    <div class="stat"><span id="res-wpm">0</span>WPM</div>
+    <div class="stat"><span id="res-acc">0%</span>Accuracy</div>
+    <div class="stat"><span id="res-time">0s</span>Time</div>
+  </div>
+</div>
+
+<a class="back" href="stealth-games-hub.html">← Back to Hub</a>
+
+<script>
+const PASSAGES = {
+  easy: [
+    "The quick brown fox jumps over the lazy dog near the river bank.",
+    "A small cat sat on the mat and looked at the big red hat.",
+    "She sells sea shells by the sea shore on a sunny summer day.",
+    "Jack and Jill ran up the hill to fetch a pail of cold water.",
+    "The sun sets in the west and rises in the east every single day.",
+  ],
+  normal: [
+    "Coding is the art of telling a computer what to do using a language it understands.",
+    "The universe is under no obligation to make sense to you, but we try anyway.",
+    "Practice makes perfect, but nobody is perfect, so why bother practicing at all?",
+    "Every great developer you know got there by solving problems they were unqualified to solve.",
+    "The only way to learn a new programming language is by writing programs in it.",
+  ],
+  hard: [
+    "Quantum entanglement suggests that two particles can instantaneously affect each other regardless of the distance separating them.",
+    "The philosophical implications of artificial intelligence challenge our understanding of consciousness, free will, and what it means to be human.",
+    "Cryptographic hash functions like SHA-256 produce a fixed-size output regardless of input length, making collisions computationally infeasible.",
+    "Neuroplasticity refers to the brain's ability to reorganize itself by forming new neural connections throughout life in response to learning.",
+    "The Byzantine Generals Problem demonstrates the difficulty of achieving consensus in distributed systems where some nodes may act maliciously.",
+  ]
+};
+
+let diff = 'easy';
+let passage = '';
+let userInput = '';
+let startTime = null;
+let timerInterval = null;
+let started = false;
+let totalTyped = 0, totalErrors = 0;
+
+const passageBox = document.getElementById('passage-box');
+const inputField = document.getElementById('input-field');
+
+function setDiff(d, btn) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  diff = d;
+  newGame();
+}
+
+function newGame() {
+  clearInterval(timerInterval);
+  started = false; startTime = null;
+  userInput = ''; totalTyped = 0; totalErrors = 0;
+  const list = PASSAGES[diff];
+  passage = list[Math.floor(Math.random() * list.length)];
+  inputField.value = '';
+  inputField.disabled = false;
+  inputField.focus();
+  document.getElementById('wpm').textContent = '0';
+  document.getElementById('acc').textContent = '100%';
+  document.getElementById('timer').textContent = '0s';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('result-box').style.display = 'none';
+  renderPassage(0);
+}
+
+function renderPassage(pos) {
+  passageBox.innerHTML = '';
+  passage.split('').forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.textContent = ch;
+    if (i < pos) {
+      span.classList.add(userInput[i] === ch ? 'correct' : 'wrong');
+    }
+    if (i === pos) span.classList.add('cursor');
+    passageBox.appendChild(span);
+  });
+}
+
+inputField.addEventListener('input', (e) => {
+  if (!started) {
+    started = true;
+    startTime = Date.now();
+    timerInterval = setInterval(updateHUD, 200);
+  }
+  const val = e.target.value;
+  // Prevent typing beyond passage length
+  if (val.length > passage.length) {
+    inputField.value = val.slice(0, passage.length);
+    return;
+  }
+  // Track errors
+  const lastChar = val[val.length - 1];
+  const expected = passage[val.length - 1];
+  if (lastChar !== undefined) {
+    totalTyped++;
+    if (lastChar !== expected) totalErrors++;
+  }
+  userInput = val;
+  renderPassage(val.length);
+  document.getElementById('progress-bar').style.width =
+    (val.length / passage.length * 100) + '%';
+
+  if (val.length === passage.length) finishGame(val);
+});
+
+function updateHUD() {
+  if (!startTime) return;
+  const elapsed = (Date.now() - startTime) / 1000;
+  document.getElementById('timer').textContent = Math.floor(elapsed) + 's';
+  const words = passage.slice(0, userInput.length).split(' ').length;
+  const wpm = elapsed > 0 ? Math.round((words / elapsed) * 60) : 0;
+  document.getElementById('wpm').textContent = wpm;
+  const acc = totalTyped > 0 ? Math.round((1 - totalErrors / totalTyped) * 100) : 100;
+  document.getElementById('acc').textContent = acc + '%';
+}
+
+function finishGame(val) {
+  clearInterval(timerInterval);
+  inputField.disabled = true;
+  const elapsed = (Date.now() - startTime) / 1000;
+  const words = passage.split(' ').length;
+  const wpm = Math.round((words / elapsed) * 60);
+  const acc = totalTyped > 0 ? Math.round((1 - totalErrors / totalTyped) * 100) : 100;
+  document.getElementById('res-wpm').textContent = wpm;
+  document.getElementById('res-acc').textContent = acc + '%';
+  document.getElementById('res-time').textContent = Math.round(elapsed) + 's';
+  document.getElementById('result-box').style.display = 'block';
+  document.getElementById('progress-bar').style.width = '100%';
+}
+
+newGame();
+</script>
+</body>
+</html>

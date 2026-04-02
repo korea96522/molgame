@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stealth Games — Hub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── Header ── */
+  header { text-align: center; margin-bottom: 60px; }
+  .logo {
+    font-size: 2.8rem;
+    font-weight: bold;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #00ff88, #00aaff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .tagline { color: #555; font-size: 0.85rem; letter-spacing: 3px; }
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #00ff88, transparent);
+    margin: 20px auto 0;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    width: min(960px, 100%);
+    margin-bottom: 60px;
+  }
+
+  /* ── Card ── */
+  .game-card {
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #0d0d18;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: inherit;
+  }
+  .game-card:hover::before { opacity: 0.04; }
+  .game-card:hover { border-color: var(--accent1); transform: translateY(-3px); }
+
+  .card-icon { font-size: 2.2rem; margin-bottom: 14px; }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 8px;
+  }
+  .card-desc { font-size: 0.82rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tag {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border: 1px solid #222;
+    border-radius: 4px;
+    color: #555;
+    letter-spacing: 1px;
+  }
+
+  .card-btn {
+    display: inline-block;
+    text-decoration: none;
+    border: 1px solid var(--accent1);
+    color: var(--accent1);
+    padding: 8px 18px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .card-btn:hover { background: rgba(0,255,136,0.1); }
+  .card-btn.coming-soon {
+    border-color: #333;
+    color: #444;
+    cursor: not-allowed;
+  }
+  .card-btn.coming-soon:hover { background: transparent; }
+
+  .badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .badge.live { border-color: #00ff8844; color: #00ff88; background: #00ff8811; }
+  .badge.new { border-color: #00aaff44; color: #00aaff; background: #00aaff11; }
+  .badge.soon { border-color: #33333388; color: #555; background: transparent; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    color: #333;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+  }
+  footer a { color: #444; text-decoration: none; }
+  footer a:hover { color: #00ff88; }
+
+  /* ── Scanline effect ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Stealth Games</div>
+  <p class="tagline">minimalist · browser · fun</p>
+  <div class="divider"></div>
+</header>
+
+<div class="grid">
+
+  <!-- Number Match -->
+  <div class="game-card" style="--accent1:#00ff88;--accent2:#00cc66;">
+    <span class="badge live">LIVE</span>
+    <div class="card-icon">🔢</div>
+    <div class="card-title">Number Match</div>
+    <div class="card-desc">
+      Flip cards and find matching number pairs. Race against the clock with
+      three grid sizes: 4×4, 4×6, and 6×6.
+    </div>
+    <div class="card-tags">
+      <span class="tag">Memory</span>
+      <span class="tag">Puzzle</span>
+      <span class="tag">Solo</span>
+    </div>
+    <a class="card-btn" href="number-match.html">Play Now</a>
+  </div>
+
+  <!-- Typing Race -->
+  <div class="game-card" style="--accent1:#00aaff;--accent2:#0077cc;">
+    <span class="badge new">NEW</span>
+    <div class="card-icon">⌨️</div>
+    <div class="card-title">Typing Race</div>
+    <div class="card-desc">
+      How fast can you type? Choose Easy, Normal, or Hard passages and track
+      your WPM and accuracy in real time.
+    </div>
+    <div class="card-tags">
+      <span class="tag">Typing</span>
+      <span class="tag">Speed</span>
+      <span class="tag">Skill</span>
+    </div>
+    <a class="card-btn" href="typing-race.html" style="--accent1:#00aaff;">Play Now</a>
+  </div>
+
+  <!-- Placeholder 1 -->
+  <div class="game-card" style="--accent1:#aa44ff;--accent2:#7722cc;">
+    <span class="badge soon">COMING SOON</span>
+    <div class="card-icon">🧩</div>
+    <div class="card-title">Color Chain</div>
+    <div class="card-desc">
+      Connect matching colored nodes without crossing paths. Satisfying,
+      logic-driven puzzle gameplay.
+    </div>
+    <div class="card-tags">
+      <span class="tag">Logic</span>
+      <span class="tag">Puzzle</span>
+    </div>
+    <span class="card-btn coming-soon">Coming Soon</span>
+  </div>
+
+  <!-- Placeholder 2 -->
+  <div class="game-card" style="--accent1:#ff8800;--accent2:#cc6600;">
+    <span class="badge soon">COMING SOON</span>
+    <div class="card-icon">🎯</div>
+    <div class="card-title">Aim Trainer</div>
+    <div class="card-desc">
+      Click targets as fast as possible. Sharpen your mouse precision with
+      progressive difficulty and leaderboard scoring.
+    </div>
+    <div class="card-tags">
+      <span class="tag">Reflexes</span>
+      <span class="tag">Speed</span>
+    </div>
+    <span class="card-btn coming-soon">Coming Soon</span>
+  </div>
+
+</div>
+
+<footer>
+  <p>Stealth Games &mdash; all games run in your browser, no install needed</p>
+  <p style="margin-top:8px;"><a href="https://github.com/korea96522/molgame">GitHub</a></p>
+</footer>
+
+</body>
+</html>
