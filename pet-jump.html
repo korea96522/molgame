@@ -116,6 +116,15 @@ a.lnk {
 a.lnk:hover { color: #00aaff; }
 a.lnk.pet { color: #ff88cc44; }
 a.lnk.pet:hover { color: #ff88cc; }
+
+/* ── WIDGET MODE ── */
+body.widget { padding: 10px 8px; min-height: auto; }
+body.widget h1 { font-size: 1.3rem; margin-bottom: 2px; }
+body.widget .sub { display: none; }
+body.widget .hud { font-size: 0.75rem; gap: 12px; margin-bottom: 8px; }
+body.widget #game-area { gap: 8px; }
+body.widget .bonus-bar { font-size: 0.65rem; }
+body.widget .links { display: none; }
 </style>
 </head>
 <body>
@@ -162,17 +171,17 @@ const CV = document.getElementById('game-canvas');
 const ctx = CV.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// ── GAME CONFIG ──
-const W = 480, H = 144;
-const GROUND_Y = 108;   // CSS px (where feet land)
+// ── WIDGET MODE ──
+const IS_WIDGET = new URLSearchParams(location.search).has('widget');
+if (IS_WIDGET) document.body.classList.add('widget');
+
+// ── GAME CONFIG (widget-aware) ──
+let W, H, GROUND_Y, PLAYER_X_CSS;
+if (IS_WIDGET) { W = 340; H = 108; GROUND_Y = 80; PLAYER_X_CSS = 48; }
+else           { W = 480; H = 144; GROUND_Y = 108; PLAYER_X_CSS = 60; }
+CV.width = W; CV.height = H;
 const SPRITE_H = 22 * S;  // 22 logical × 3 scale = 66px
 const SPRITE_W = 16 * S;  // 48px
-
-// Player starts with feet on ground
-// sprite drawn from oy in logical; feet at oy+22 = ground logical
-// ground logical = GROUND_Y/S = 36
-// so oy = 36-22 = 14 logical → CSS: 14*3 = 42px
-const PLAYER_X_CSS = 60;
 
 // ── STATE ──
 let nick = '', pet = null;
@@ -198,9 +207,9 @@ let obsCooldown = 0;
 
 // Clouds (parallax bg)
 let clouds = [
-  { x: 120, y: 20, w: 40 },
-  { x: 300, y: 35, w: 60 },
-  { x: 420, y: 18, w: 30 },
+  { x: W * 0.25, y: 20, w: 40 },
+  { x: W * 0.625, y: 35, w: 60 },
+  { x: W * 0.9,  y: 18, w: 30 },
 ];
 
 // ── LOAD PET ──
@@ -280,9 +289,9 @@ function resetGame() {
   py = GROUND_PY; vy = 0;
   obstacles = []; obsCooldown = 80;
   clouds = [
-    { x: 120, y: 20, w: 40 },
-    { x: 300, y: 35, w: 60 },
-    { x: 430, y: 18, w: 30 },
+    { x: W * 0.25,  y: 20, w: 40 },
+    { x: W * 0.625, y: 35, w: 60 },
+    { x: W * 0.9,   y: 18, w: 30 },
   ];
   gameState = 'idle';
   document.getElementById('hud-score').textContent = '0';

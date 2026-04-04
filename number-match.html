@@ -116,6 +116,17 @@
   #win-screen.show { display: flex; }
   #win-screen h2 { font-size: 2.5rem; color: #00ff88; letter-spacing: 6px; }
   #win-screen p { color: #888; }
+
+  /* ── WIDGET MODE ── */
+  body.widget { padding: 10px; min-height: auto; }
+  body.widget h1 { font-size: 1.4rem; margin-bottom: 2px; }
+  body.widget .subtitle { margin-bottom: 10px; font-size: 0.78rem; }
+  body.widget .level-select { margin-bottom: 10px; gap: 6px; }
+  body.widget .level-btn:last-child { display: none; }
+  body.widget .hud { gap: 16px; font-size: 0.78rem; margin-bottom: 10px; }
+  body.widget #board { gap: 6px; margin-bottom: 10px; }
+  body.widget .card { width: 56px; height: 56px; font-size: 1.3rem; border-radius: 6px; }
+  body.widget a.back { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -151,6 +162,11 @@
 </div>
 
 <script>
+const IS_WIDGET = new URLSearchParams(location.search).has('widget');
+if (IS_WIDGET) document.body.classList.add('widget');
+const CARD_SIZE = IS_WIDGET ? 56 : 70;
+const CARD_GAP  = IS_WIDGET ? 6  : 8;
+
 let cols = 4, rows = 4;
 let cards = [], revealed = [], matched = 0, moves = 0;
 let locked = false, timerInterval = null, seconds = 0;
@@ -184,7 +200,8 @@ function startGame() {
 
 function renderBoard() {
   const board = document.getElementById('board');
-  board.style.gridTemplateColumns = `repeat(${cols}, 70px)`;
+  board.style.gridTemplateColumns = `repeat(${cols}, ${CARD_SIZE}px)`;
+  board.style.gap = `${CARD_GAP}px`;
   board.innerHTML = '';
   cards.forEach((val, i) => {
     const card = document.createElement('div');

@@ -138,6 +138,21 @@
     width: 0%;
     transition: width 0.1s;
   }
+
+  /* ── WIDGET MODE ── */
+  body.widget { padding: 12px 10px; min-height: auto; }
+  body.widget h1 { font-size: 1.4rem; margin-bottom: 2px; }
+  body.widget .subtitle { margin-bottom: 12px; }
+  body.widget .diff-select { margin-bottom: 12px; gap: 6px; }
+  body.widget .hud { gap: 14px; margin-bottom: 10px; font-size: 0.8rem; }
+  body.widget .hud span { font-size: 0.95rem; }
+  body.widget #progress-bar-wrap { margin-bottom: 10px; }
+  body.widget #passage-box { font-size: 0.95rem; line-height: 1.7; padding: 12px 14px; min-height: 70px; }
+  body.widget #input-field { padding: 8px 12px; margin-bottom: 12px; }
+  body.widget #result-box { padding: 14px 16px; }
+  body.widget #result-box h2 { font-size: 1.2rem; }
+  body.widget .stat span { font-size: 1.1rem; }
+  body.widget a.back { display: none; }
 </style>
 </head>
 <body>
@@ -179,6 +194,9 @@
 <a class="back" href="stealth-games-hub.html">← Back to Hub</a>
 
 <script>
+const IS_WIDGET = new URLSearchParams(location.search).has('widget');
+if (IS_WIDGET) document.body.classList.add('widget');
+
 const PASSAGES = {
   easy: [
     "The quick brown fox jumps over the lazy dog near the river bank.",

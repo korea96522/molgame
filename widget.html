@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Stealth Games Widget</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 360px;
+  height: 580px;
+  overflow: hidden;
+  background: #0a0a0f;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── TAB BAR ── */
+#tabs {
+  display: flex;
+  height: 40px;
+  background: #0d0d18;
+  border-bottom: 1px solid #1a1a2e;
+  user-select: none;
+}
+.tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #1a1a2e;
+  border-bottom: 2px solid transparent;
+  color: #444;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.tab:last-of-type { border-right: none; }
+.tab:hover { background: #111122; color: #888; }
+.tab.active {
+  background: #0a0a0f;
+  color: #fff;
+  border-bottom-color: var(--accent);
+}
+
+/* ── POPOUT BUTTON ── */
+#btn-popout {
+  width: 40px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid #1a1a2e;
+  color: #333;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color .15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#btn-popout:hover { color: #00ff88; }
+
+/* ── FRAME AREA ── */
+#frames {
+  position: relative;
+  width: 360px;
+  height: 540px;
+}
+iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: none;
+}
+iframe.active { display: block; }
+
+/* ── LOADING INDICATOR ── */
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button class="tab active" style="--accent:#ff88cc" onclick="switchTab(0)" title="Mini Pet">🐾</button>
+  <button class="tab"        style="--accent:#aa44ff" onclick="switchTab(1)" title="Pet Jump">🦘</button>
+  <button class="tab"        style="--accent:#00ff88" onclick="switchTab(2)" title="Number Match">🔢</button>
+  <button class="tab"        style="--accent:#00aaff" onclick="switchTab(3)" title="Typing Race">⌨️</button>
+  <button id="btn-popout" onclick="popout()" title="새 창으로 열기">⊞</button>
+</div>
+
+<div id="frames">
+  <div class="loading" id="loading-0"></div>
+  <div class="loading" id="loading-1">loading...</div>
+  <div class="loading" id="loading-2">loading...</div>
+  <div class="loading" id="loading-3">loading...</div>
+  <iframe id="f0" class="active" src="mini-pet.html?widget=1"></iframe>
+  <iframe id="f1" src=""></iframe>
+  <iframe id="f2" src=""></iframe>
+  <iframe id="f3" src=""></iframe>
+</div>
+
+<script>
+const SRCS = [
+  'mini-pet.html?widget=1',
+  'pet-jump.html?widget=1',
+  'number-match.html?widget=1',
+  'typing-race.html?widget=1',
+];
+
+const tabs    = document.querySelectorAll('.tab:not(#btn-popout)');
+const frames  = [0,1,2,3].map(i => document.getElementById('f'+i));
+const loaders = [0,1,2,3].map(i => document.getElementById('loading-'+i));
+let current = 0;
+
+// Hide loader when iframe loads
+frames.forEach((fr, i) => {
+  fr.addEventListener('load', () => {
+    if (loaders[i]) loaders[i].style.display = 'none';
+  });
+});
+
+function switchTab(i) {
+  if (i === current) return;
+  tabs[current].classList.remove('active');
+  frames[current].classList.remove('active');
+  current = i;
+  tabs[i].classList.add('active');
+  // Lazy-load: set src on first visit
+  if (!frames[i].src || frames[i].src === location.href) {
+    frames[i].src = SRCS[i];
+  }
+  frames[i].classList.add('active');
+  // Route keyboard events into the active game
+  setTimeout(() => frames[i].focus(), 80);
+}
+
+function popout() {
+  window.open(
+    'widget.html',
+    'stealth_widget',
+    'width=360,height=600,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,resizable=0'
+  );
+}
+</script>
+</body>
+</html>

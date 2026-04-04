@@ -220,6 +220,16 @@ a.lnk:hover { color: #ff88cc; }
 a.lnk.jump { color: #00aaff44; }
 a.lnk.jump:hover { color: #00aaff; }
 .hint { font-size: 0.65rem; color: #282828; letter-spacing: 1px; }
+
+/* ── WIDGET MODE ── */
+body.widget { justify-content: flex-start; padding: 10px; min-height: auto; }
+body.widget h1 { font-size: 1.4rem; letter-spacing: 3px; margin-bottom: 2px; }
+body.widget .sub { display: none; }
+body.widget .btn { padding: 6px 16px; }
+body.widget .pet-header, body.widget .stats,
+body.widget .actions, body.widget #mood-bubble { width: 100%; max-width: 208px; }
+body.widget .footer-links { display: none; }
+body.widget .hint { display: none; }
 </style>
 </head>
 <body>
@@ -347,6 +357,10 @@ a.lnk.jump:hover { color: #00aaff; }
     });
   });
 })();
+
+// ── WIDGET MODE ──
+const IS_WIDGET = new URLSearchParams(location.search).has('widget');
+if (IS_WIDGET) document.body.classList.add('widget');
 
 // ── STORAGE ──
 const KEY = n => `stealth_pet_${n}`;
@@ -541,7 +555,7 @@ function startGame() {
   show('s-game');
   // Jump link: pass nickname as query param
   document.getElementById('jump-link').href =
-    `pet-jump.html?nick=${encodeURIComponent(nickname)}`;
+    `pet-jump.html?nick=${encodeURIComponent(nickname)}${IS_WIDGET ? '&widget=1' : ''}`;
 
   if (tickTimer) clearInterval(tickTimer);
   tickTimer = setInterval(() => {
