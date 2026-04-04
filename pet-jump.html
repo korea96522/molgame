@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pet Jump — Stealth Games</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+}
+h1 {
+  font-size: 1.8rem;
+  color: #00aaff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: 0 0 20px #00aaff44;
+}
+.sub { color: #555; font-size: 0.78rem; letter-spacing: 3px; margin-bottom: 20px; }
+
+/* ── NICK PROMPT ── */
+#nick-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+#nick-screen.hidden { display: none; }
+input[type=text] {
+  background: #111;
+  border: 1px solid #2a2a3a;
+  color: #e0e0e0;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 9px 16px;
+  border-radius: 6px;
+  outline: none;
+  text-align: center;
+  width: 220px;
+  letter-spacing: 2px;
+}
+input[type=text]:focus { border-color: #00aaff55; }
+
+/* ── GAME AREA ── */
+#game-area { display: none; flex-direction: column; align-items: center; gap: 14px; }
+#game-area.show { display: flex; }
+
+.hud {
+  display: flex;
+  gap: 28px;
+  font-size: 0.85rem;
+  color: #666;
+  letter-spacing: 2px;
+}
+.hud span { color: #00aaff; font-weight: bold; font-size: 1rem; }
+
+#game-canvas {
+  image-rendering: pixelated;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+  display: block;
+  cursor: pointer;
+}
+
+#msg {
+  font-size: 0.85rem;
+  color: #555;
+  letter-spacing: 2px;
+  min-height: 20px;
+  text-align: center;
+}
+
+/* ── PET STAT BONUS ── */
+.bonus-bar {
+  display: flex;
+  gap: 16px;
+  font-size: 0.72rem;
+  color: #444;
+  letter-spacing: 1px;
+}
+.bonus-item { display: flex; align-items: center; gap: 5px; }
+.bonus-item span { color: #00aaff88; }
+
+.btn {
+  background: transparent;
+  border: 1px solid #00aaff;
+  color: #00aaff;
+  padding: 8px 22px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: all .2s;
+}
+.btn:hover { background: #00aaff22; }
+
+.links { display: flex; gap: 20px; margin-top: 4px; }
+a.lnk {
+  color: #333;
+  text-decoration: none;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  transition: color .2s;
+}
+a.lnk:hover { color: #00aaff; }
+a.lnk.pet { color: #ff88cc44; }
+a.lnk.pet:hover { color: #ff88cc; }
+</style>
+</head>
+<body>
+
+<h1>Pet Jump</h1>
+<p class="sub">avoid obstacles — your pet stats matter</p>
+
+<!-- NICKNAME PROMPT (if arriving directly) -->
+<div id="nick-screen">
+  <p style="font-size:.78rem;color:#555;letter-spacing:2px;">닉네임으로 펫 불러오기</p>
+  <input type="text" id="nick-input" placeholder="닉네임 입력" maxlength="12" autocomplete="off">
+  <button class="btn" onclick="loadNick()">확인</button>
+</div>
+
+<!-- GAME AREA -->
+<div id="game-area">
+  <div class="hud">
+    점수: <span id="hud-score">0</span>
+    &nbsp;|&nbsp;
+    최고: <span id="hud-best">0</span>
+    &nbsp;|&nbsp;
+    속도: <span id="hud-speed">1.0x</span>
+  </div>
+
+  <canvas id="game-canvas" width="480" height="144"></canvas>
+
+  <div id="msg">스페이스 / 클릭으로 점프!</div>
+
+  <div class="bonus-bar">
+    <div class="bonus-item">⚡ 에너지 <span id="bon-jump">+0% 점프</span></div>
+    <div class="bonus-item">💛 행복도 <span id="bon-speed">-0% 속도</span></div>
+  </div>
+
+  <div class="links">
+    <a class="lnk pet" id="pet-link" href="mini-pet.html">← 펫 키우기</a>
+    <a class="lnk" href="stealth-games-hub.html">← 허브</a>
+  </div>
+</div>
+
+<script src="pet-sprites.js"></script>
+<script>
+// ── CANVAS SETUP ──
+const CV = document.getElementById('game-canvas');
+const ctx = CV.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+// ── GAME CONFIG ──
+const W = 480, H = 144;
+const GROUND_Y = 108;   // CSS px (where feet land)
+const SPRITE_H = 22 * S;  // 22 logical × 3 scale = 66px
+const SPRITE_W = 16 * S;  // 48px
+
+// Player starts with feet on ground
+// sprite drawn from oy in logical; feet at oy+22 = ground logical
+// ground logical = GROUND_Y/S = 36
+// so oy = 36-22 = 14 logical → CSS: 14*3 = 42px
+const PLAYER_X_CSS = 60;
+
+// ── STATE ──
+let nick = '', pet = null;
+let gameState = 'idle'; // idle | running | dead
+let score = 0, best = 0;
+let speed = 2.8;        // pixels per frame
+let frameCount = 0;
+let jumpBonus = 0;      // % extra jump height from energy
+let speedPenalty = 0;   // % speed reduction from happiness
+
+// Player physics (in CSS px)
+let py = GROUND_Y - SPRITE_H;  // top-left y of sprite
+const GROUND_PY = GROUND_Y - SPRITE_H;
+let vy = 0;
+const GRAVITY = 0.55;
+let canJump = true;
+let canDoubleJump = false;  // unlock if happy > 70
+let usedDoubleJump = false;
+
+// Obstacles
+let obstacles = [];
+let obsCooldown = 0;
+
+// Clouds (parallax bg)
+let clouds = [
+  { x: 120, y: 20, w: 40 },
+  { x: 300, y: 35, w: 60 },
+  { x: 420, y: 18, w: 30 },
+];
+
+// ── LOAD PET ──
+const KEY = n => `stealth_pet_${n}`;
+
+function loadPetData(n) {
+  const d = localStorage.getItem(KEY(n));
+  return d ? JSON.parse(d) : null;
+}
+
+function applyPetStats() {
+  if (!pet) { jumpBonus = 0; speedPenalty = 0; canDoubleJump = false; return; }
+  jumpBonus    = Math.max(0, (pet.energy - 50) * 0.4);  // 0-20% at 100 energy
+  speedPenalty = pet.happy < 50 ? (50 - pet.happy) * 0.3 : 0; // up to -15% speed
+  canDoubleJump = pet.happy > 70;
+  document.getElementById('bon-jump').textContent  = `+${Math.round(jumpBonus)}% 점프`;
+  document.getElementById('bon-speed').textContent = `-${Math.round(speedPenalty)}% 속도`;
+  best = pet.highScore || 0;
+  document.getElementById('hud-best').textContent = best;
+}
+
+function initWithNick(n) {
+  nick = n;
+  pet = loadPetData(nick);
+  applyPetStats();
+  document.getElementById('pet-link').href =
+    `mini-pet.html`;
+  document.getElementById('nick-screen').classList.add('hidden');
+  document.getElementById('game-area').classList.add('show');
+  resetGame();
+  requestAnimationFrame(gameLoop);
+}
+
+// Check URL param
+const params = new URLSearchParams(location.search);
+const urlNick = params.get('nick');
+if (urlNick) {
+  initWithNick(urlNick);
+} else {
+  // show nick screen
+}
+
+function loadNick() {
+  const n = document.getElementById('nick-input').value.trim();
+  if (!n) return;
+  initWithNick(n);
+}
+document.getElementById('nick-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadNick();
+});
+
+// ── JUMP ──
+function doJump() {
+  if (gameState === 'idle' || gameState === 'dead') {
+    startGame(); return;
+  }
+  if (gameState !== 'running') return;
+  if (py >= GROUND_PY - 2) {
+    // on ground
+    const jh = 9.5 + jumpBonus * 0.1;
+    vy = -jh;
+    usedDoubleJump = false;
+  } else if (canDoubleJump && !usedDoubleJump) {
+    vy = -8;
+    usedDoubleJump = true;
+  }
+}
+
+CV.addEventListener('click', doJump);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
+});
+
+// ── GAME ──
+function resetGame() {
+  score = 0; speed = 2.8; frameCount = 0;
+  py = GROUND_PY; vy = 0;
+  obstacles = []; obsCooldown = 80;
+  clouds = [
+    { x: 120, y: 20, w: 40 },
+    { x: 300, y: 35, w: 60 },
+    { x: 430, y: 18, w: 30 },
+  ];
+  gameState = 'idle';
+  document.getElementById('hud-score').textContent = '0';
+  document.getElementById('hud-speed').textContent = '1.0x';
+  document.getElementById('msg').textContent = '스페이스 / 클릭으로 시작!';
+}
+
+function startGame() {
+  gameState = 'running';
+  document.getElementById('msg').textContent = '';
+}
+
+function killGame() {
+  gameState = 'dead';
+  // Give pet happiness from score
+  if (pet && nick) {
+    const gain = Math.min(15, Math.floor(score / 20));
+    pet.happy = Math.min(100, (pet.happy || 50) + gain);
+    if (score > (pet.highScore || 0)) pet.highScore = score;
+    pet.lastSaved = Date.now();
+    localStorage.setItem(KEY(nick), JSON.stringify(pet));
+    best = pet.highScore;
+    document.getElementById('hud-best').textContent = best;
+  }
+  document.getElementById('msg').textContent =
+    `💥 점수: ${score}  |  스페이스로 재시작`;
+}
+
+function spawnObstacle() {
+  const types = ['low','mid','high'];
+  const t = types[Math.floor(Math.random() * (speed > 5 ? 3 : 2))];
+  const w = 14 + Math.random() * 10;
+  let h, y;
+  if (t === 'low')  { h = 20 + Math.random()*16; y = GROUND_Y - h; }
+  if (t === 'mid')  { h = 32 + Math.random()*10; y = GROUND_Y - h; }
+  if (t === 'high') { h = 16; y = GROUND_Y - 56 - Math.random()*16; }
+  obstacles.push({ x: W + 16, y, w, h, type: t });
+}
+
+function collides(px, py, pw, ph, ox, oy, ow, oh) {
+  const margin = 6;
+  return px+margin < ox+ow && px+pw-margin > ox &&
+         py+margin < oy+oh && py+ph-margin > oy;
+}
+
+// ── DRAW HELPERS ──
+function drawGround() {
+  // Ground line
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, GROUND_Y, W, 2);
+  ctx.fillStyle = '#111122';
+  ctx.fillRect(0, GROUND_Y+2, W, H - GROUND_Y - 2);
+  // dashes
+  ctx.fillStyle = '#1e1e30';
+  for (let x = (frameCount * speed * 0.5) % 40; x < W; x += 40) {
+    ctx.fillRect(x, GROUND_Y+1, 20, 1);
+  }
+}
+
+function drawCloud(c) {
+  ctx.fillStyle = '#111828';
+  ctx.fillRect(c.x, c.y, c.w, 10);
+  ctx.fillRect(c.x + 6, c.y - 5, c.w - 12, 8);
+}
+
+function drawObstacle(o) {
+  // Cactus-like pixel block
+  const blockC = '#223322';
+  const hlC    = '#334433';
+  ctx.fillStyle = blockC;
+  ctx.fillRect(o.x, o.y, o.w, o.h);
+  ctx.fillStyle = hlC;
+  ctx.fillRect(o.x+1, o.y+1, 2, o.h-2);
+
+  if (o.type === 'high') {
+    // floating block — draw with arrow indicator
+    ctx.fillStyle = '#ff444444';
+    ctx.font = '10px monospace';
+    ctx.fillText('▼', o.x + o.w/2 - 4, o.y - 4);
+  }
+}
+
+function drawScore() {
+  ctx.font = 'bold 13px monospace';
+  ctx.fillStyle = '#00aaff44';
+  ctx.fillText(score.toString().padStart(5,'0'), W - 68, 20);
+}
+
+function drawIdleText() {
+  ctx.font = '12px monospace';
+  ctx.fillStyle = '#00aaff';
+  ctx.textAlign = 'center';
+  ctx.fillText('SPACE / CLICK to start', W/2, H/2 - 10);
+  ctx.textAlign = 'left';
+}
+
+// ── MAIN LOOP ──
+function gameLoop() {
+  requestAnimationFrame(gameLoop);
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky bg
+  ctx.fillStyle = '#080812';
+  ctx.fillRect(0, 0, W, H);
+
+  // Clouds (slow parallax)
+  clouds.forEach(c => {
+    if (gameState === 'running') c.x -= speed * 0.3;
+    if (c.x + c.w < 0) c.x = W + 20;
+    drawCloud(c);
+  });
+
+  drawGround();
+
+  if (gameState === 'running') {
+    frameCount++;
+    score = Math.floor(frameCount / 6);
+    document.getElementById('hud-score').textContent = score;
+
+    // Speed ramp
+    const effectiveSpeed = speed * (1 - speedPenalty / 100);
+    speed = 2.8 + frameCount * 0.0018;
+    if (speed > 9) speed = 9;
+    document.getElementById('hud-speed').textContent =
+      (effectiveSpeed / 2.8).toFixed(1) + 'x';
+
+    // Physics
+    vy += GRAVITY;
+    py += vy;
+    if (py >= GROUND_PY) { py = GROUND_PY; vy = 0; usedDoubleJump = false; }
+
+    // Obstacles
+    obsCooldown--;
+    if (obsCooldown <= 0) {
+      spawnObstacle();
+      obsCooldown = Math.max(40, 110 - frameCount * 0.08) + Math.random() * 30;
+    }
+    obstacles.forEach(o => { o.x -= effectiveSpeed; });
+    obstacles = obstacles.filter(o => o.x + o.w > -10);
+
+    // Collision
+    const pw = SPRITE_W, ph = SPRITE_H;
+    for (const o of obstacles) {
+      if (collides(PLAYER_X_CSS, py, pw, ph, o.x, o.y, o.w, o.h)) {
+        killGame();
+        break;
+      }
+    }
+  }
+
+  // Draw obstacles
+  obstacles.forEach(drawObstacle);
+
+  // Draw player
+  const stage = pet ? pet.stage : 0;
+  const type  = pet ? pet.type  : 'dog';
+  // logical: PLAYER_X_CSS/S, py/S
+  const lox = Math.round(PLAYER_X_CSS / S);
+  const loy = Math.round(py / S);
+  drawPet(ctx, lox, loy, type, stage);
+
+  drawScore();
+
+  if (gameState === 'idle') drawIdleText();
+
+  // Double jump indicator
+  if (canDoubleJump && py < GROUND_PY - 10) {
+    ctx.font = '9px monospace';
+    ctx.fillStyle = usedDoubleJump ? '#333' : '#00aaff88';
+    ctx.fillText('✦', PLAYER_X_CSS + 20, py - 4);
+  }
+}
+</script>
+</body>
+</html>

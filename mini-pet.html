@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Pet — Stealth Games</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── PANIC OVERLAY (looks like Excel) ── */
+#panic {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+  font-family: Calibri, Arial, sans-serif;
+  font-size: 12px;
+  color: #000;
+  overflow: hidden;
+}
+#panic.show { display: block; }
+.ptool {
+  background: #217346;
+  color: #fff;
+  padding: 3px 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.prib {
+  background: #f3f3f3;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #555;
+  display: flex;
+  gap: 20px;
+}
+.pfx {
+  background: #fff;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+.psheet {
+  display: grid;
+  font-size: 11px;
+}
+.pcell {
+  border-right: 1px solid #d8d8d8;
+  border-bottom: 1px solid #d8d8d8;
+  padding: 1px 4px;
+  height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.phdr { background: #f2f2f2; font-weight: 600; text-align: center; }
+.pnum { text-align: right; color: #1f497d; }
+.esc-hint {
+  position: fixed;
+  bottom: 8px;
+  right: 12px;
+  font-size: 10px;
+  color: #aaa;
+  font-family: Arial, sans-serif;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; flex-direction: column; align-items: center; gap: 14px; }
+.screen.active { display: flex; }
+
+h1 {
+  font-size: 1.9rem;
+  color: #ff88cc;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px #ff88cc55;
+}
+.sub { color: #555; font-size: 0.78rem; letter-spacing: 3px; }
+
+input[type=text] {
+  background: #111;
+  border: 1px solid #2a2a3a;
+  color: #e0e0e0;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 9px 16px;
+  border-radius: 6px;
+  outline: none;
+  text-align: center;
+  width: 220px;
+  letter-spacing: 2px;
+  transition: border-color .2s;
+}
+input[type=text]:focus { border-color: #ff88cc55; }
+
+.btn {
+  background: transparent;
+  border: 1px solid #ff88cc;
+  color: #ff88cc;
+  padding: 8px 22px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: all .2s;
+}
+.btn:hover { background: #ff88cc22; }
+
+/* ── CHARACTER SELECT ── */
+.char-row { display: flex; gap: 14px; }
+.char-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #1e1e2e;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #0d0d18;
+  transition: all .2s;
+}
+.char-opt:hover { border-color: #ff88cc66; background: #180d18; transform: translateY(-2px); }
+.char-opt canvas { image-rendering: pixelated; }
+.char-lbl { font-size: 0.72rem; color: #666; letter-spacing: 2px; }
+
+/* ── GAME SCREEN ── */
+#game-canvas {
+  image-rendering: pixelated;
+  border: 1px solid #1a1a2e;
+  border-radius: 10px;
+  background: #080812;
+  cursor: default;
+}
+.pet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 208px;
+  font-size: 0.72rem;
+  color: #555;
+  letter-spacing: 2px;
+}
+.pet-header span { color: #ff88cc88; }
+#mood-bubble {
+  background: #0e0e1e;
+  border: 1px solid #1e1e2e;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  color: #999;
+  max-width: 208px;
+  text-align: center;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#sick-warn {
+  color: #ff5555;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  display: none;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.stats { width: 208px; display: flex; flex-direction: column; gap: 5px; }
+.stat-row { display: flex; align-items: center; gap: 7px; }
+.stat-ico { font-size: 1rem; width: 20px; text-align: center; }
+.bar-bg { flex: 1; height: 7px; background: #111; border-radius: 4px; overflow: hidden; border: 1px solid #1a1a2e; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+.bar-n { width: 26px; text-align: right; font-size: 0.7rem; color: #444; }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; width: 208px; }
+.act {
+  background: #0d0d18;
+  border: 1px solid #1a1a2e;
+  color: #777;
+  padding: 9px 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all .2s;
+  letter-spacing: 1px;
+}
+.act:hover:not(:disabled) { border-color: #ff88cc88; color: #ff88cc; background: #180d18; }
+.act:disabled { opacity: 0.28; cursor: default; }
+#btn-med { grid-column: span 2; display: none; }
+
+.footer-links { display: flex; gap: 18px; }
+a.lnk {
+  color: #333;
+  text-decoration: none;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  transition: color .2s;
+}
+a.lnk:hover { color: #ff88cc; }
+a.lnk.jump { color: #00aaff44; }
+a.lnk.jump:hover { color: #00aaff; }
+.hint { font-size: 0.65rem; color: #282828; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<!-- ── PANIC OVERLAY ── -->
+<div id="panic">
+  <div class="ptool">
+    <span>📊</span>
+    <span style="font-weight:600">WorkReport_Q4.xlsx — Excel</span>
+    <span style="margin-left:auto;font-size:11px">▢ ✕</span>
+  </div>
+  <div class="prib">
+    <span>File</span><span>Home</span><span>Insert</span>
+    <span>Page Layout</span><span>Formulas</span><span>Data</span><span>Review</span>
+  </div>
+  <div class="pfx">
+    <span style="width:48px;text-align:center;border:1px solid #ccc;padding:1px 4px;">A1</span>
+    <span>fx</span>
+    <span style="flex:1">Item</span>
+  </div>
+  <div id="pgrid" class="psheet"></div>
+  <p class="esc-hint">Press <b>Esc</b> to return</p>
+</div>
+
+<!-- ── SCREEN: WELCOME ── -->
+<div id="s-welcome" class="screen active">
+  <h1>Mini Pet</h1>
+  <p class="sub">your secret desktop companion</p>
+  <input type="text" id="nick-input" placeholder="닉네임 입력" maxlength="12" autocomplete="off">
+  <button class="btn" onclick="doStart()">시작하기</button>
+</div>
+
+<!-- ── SCREEN: CHARACTER SELECT ── -->
+<div id="s-select" class="screen">
+  <h1>Choose Pet</h1>
+  <p class="sub">pick your companion</p>
+  <div class="char-row">
+    <div class="char-opt" onclick="choosePet('dog')">
+      <canvas id="prev-dog" width="48" height="66" style="image-rendering:pixelated"></canvas>
+      <span class="char-lbl">강아지</span>
+    </div>
+    <div class="char-opt" onclick="choosePet('cat')">
+      <canvas id="prev-cat" width="48" height="66" style="image-rendering:pixelated"></canvas>
+      <span class="char-lbl">고양이</span>
+    </div>
+    <div class="char-opt" onclick="choosePet('bear')">
+      <canvas id="prev-bear" width="48" height="66" style="image-rendering:pixelated"></canvas>
+      <span class="char-lbl">곰</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: GAME ── -->
+<div id="s-game" class="screen">
+  <div class="pet-header">
+    <span id="lbl-name">PET</span>
+    <span id="lbl-stage">EGG</span>
+  </div>
+  <canvas id="game-canvas" width="192" height="192"></canvas>
+  <div id="mood-bubble">...</div>
+  <div id="sick-warn">⚠ 아파요! 약이 필요해요</div>
+  <div class="stats">
+    <div class="stat-row">
+      <span class="stat-ico">🍖</span>
+      <div class="bar-bg"><div class="bar-fill" id="b-hunger" style="background:#ff8844;width:80%"></div></div>
+      <span class="bar-n" id="n-hunger">80</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-ico">💛</span>
+      <div class="bar-bg"><div class="bar-fill" id="b-happy" style="background:#ffdd44;width:80%"></div></div>
+      <span class="bar-n" id="n-happy">80</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-ico">⚡</span>
+      <div class="bar-bg"><div class="bar-fill" id="b-energy" style="background:#44aaff;width:80%"></div></div>
+      <span class="bar-n" id="n-energy">80</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-ico">🧼</span>
+      <div class="bar-bg"><div class="bar-fill" id="b-clean" style="background:#66ffcc;width:80%"></div></div>
+      <span class="bar-n" id="n-clean">80</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="act" id="btn-feed"  onclick="doAction('feed')">🍖 밥주기</button>
+    <button class="act" id="btn-play"  onclick="doAction('play')">🎾 놀아주기</button>
+    <button class="act" id="btn-sleep" onclick="doAction('sleep')">💤 재우기</button>
+    <button class="act" id="btn-wash"  onclick="doAction('wash')">🛁 씻기기</button>
+    <button class="act" id="btn-med"   onclick="doAction('medicine')">💊 약주기</button>
+  </div>
+  <div class="footer-links">
+    <a class="lnk jump" id="jump-link" href="pet-jump.html">⌨ 점프게임</a>
+    <a class="lnk" href="stealth-games-hub.html">← 허브</a>
+  </div>
+  <p class="hint">P키 → 숨기기 &nbsp;|&nbsp; ESC → 돌아오기</p>
+</div>
+
+<script src="pet-sprites.js"></script>
+<script>
+// ── PANIC SPREADSHEET DATA ──
+(function buildSheet() {
+  const cols = ['', 'A','B','C','D','E','F','G','H'];
+  const rows = [
+    ['', '항목','1분기','2분기','3분기','4분기','합계','예산','달성률'],
+    ['1','매출액','48,200','51,400','49,800','52,100','201,500','195,000','103.3%'],
+    ['2','매출원가','21,400','22,800','21,900','23,200','89,300','88,000','101.5%'],
+    ['3','매출총이익','26,800','28,600','27,900','28,900','112,200','107,000','104.9%'],
+    ['4','판관비','14,200','14,800','13,900','15,200','58,100','57,500','101.0%'],
+    ['5','영업이익','12,600','13,800','14,000','13,700','54,100','49,500','109.3%'],
+    ['6','','','','','','','',''],
+    ['7','인원수','124','126','128','130','','',''],
+    ['8','평균급여','4,200','4,200','4,350','4,350','','',''],
+    ['9','','','','','','','',''],
+    ['10','ROI','18.2%','19.4%','20.1%','19.8%','','',''],
+  ];
+  const grid = document.getElementById('pgrid');
+  grid.style.gridTemplateColumns = '36px repeat(8, 80px)';
+  rows.forEach((row, ri) => {
+    row.forEach((cell, ci) => {
+      const d = document.createElement('div');
+      d.className = 'pcell' + (ri === 0 || ci === 0 ? ' phdr' : '');
+      if (ri > 0 && ci > 1 && cell && /[\d,%.]+/.test(cell)) d.classList.add('pnum');
+      d.textContent = cell;
+      grid.appendChild(d);
+    });
+  });
+})();
+
+// ── STORAGE ──
+const KEY = n => `stealth_pet_${n}`;
+let nickname = '';
+let pet = null;
+let tickTimer = null;
+let animReq = null;
+let breath = 0;
+let moodOverride = null;
+let moodTimer = null;
+const cooldowns = {};
+
+function savePet() {
+  if (!nickname || !pet) return;
+  pet.lastSaved = Date.now();
+  localStorage.setItem(KEY(nickname), JSON.stringify(pet));
+}
+function loadPet(n) {
+  const d = localStorage.getItem(KEY(n));
+  return d ? JSON.parse(d) : null;
+}
+function newPet(type) {
+  return {
+    type, stage: 0,
+    hunger: 80, happy: 80, energy: 80, clean: 80,
+    sick: false,
+    createdAt: Date.now(),
+    lastSaved: Date.now(),
+    highScore: 0,
+  };
+}
+
+// ── SCREENS ──
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function doStart() {
+  const n = document.getElementById('nick-input').value.trim();
+  if (!n) return;
+  nickname = n;
+  const saved = loadPet(nickname);
+  if (saved) {
+    pet = saved;
+    applyDecay();
+    startGame();
+  } else {
+    show('s-select');
+    drawPreviews();
+  }
+}
+document.getElementById('nick-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doStart();
+});
+
+function drawPreviews() {
+  ['dog','cat','bear'].forEach(type => {
+    const c = document.getElementById(`prev-${type}`);
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.imageSmoothingEnabled = false;
+    // Preview canvas 48x66 = 16x22 logical at S=3
+    // Draw adult (stage 3) centered
+    drawPet(ctx, 0, 2, type, 3);
+  });
+}
+
+function choosePet(type) {
+  pet = newPet(type);
+  savePet();
+  startGame();
+}
+
+// ── TIME DECAY ──
+function applyDecay() {
+  const mins = (Date.now() - pet.lastSaved) / 60000;
+  pet.hunger = Math.max(0, pet.hunger - mins * 0.8);
+  pet.happy  = Math.max(0, pet.happy  - mins * 0.5);
+  pet.energy = Math.max(0, pet.energy - mins * 0.4);
+  pet.clean  = Math.max(0, pet.clean  - mins * 0.25);
+  checkSick();
+  advanceStage();
+}
+
+function checkSick() {
+  if (pet.hunger < 10 || pet.energy < 10) pet.sick = true;
+}
+
+function advanceStage() {
+  const hrs = (Date.now() - pet.createdAt) / 3600000;
+  const avg = (pet.hunger + pet.happy + pet.energy + pet.clean) / 4;
+  if (hrs >= 0.1  && pet.stage === 0) pet.stage = 1;
+  if (hrs >= 1    && pet.stage === 1 && avg > 40) pet.stage = 2;
+  if (hrs >= 6    && pet.stage === 2 && avg > 50) pet.stage = 3;
+  if (hrs >= 24   && pet.stage === 3 && avg > 60) pet.stage = 4;
+}
+
+// ── ACTIONS ──
+function doAction(type) {
+  if (!pet) return;
+  const now = Date.now();
+  const cd = { feed:3000, play:5000, sleep:8000, wash:5000, medicine:2000 };
+  if (cooldowns[type] && now - cooldowns[type] < cd[type]) return;
+  cooldowns[type] = now;
+
+  const flash = (msg) => {
+    moodOverride = msg;
+    clearTimeout(moodTimer);
+    moodTimer = setTimeout(() => moodOverride = null, 2200);
+  };
+
+  switch (type) {
+    case 'feed':
+      pet.hunger = Math.min(100, pet.hunger + 28);
+      pet.happy  = Math.min(100, pet.happy  + 5);
+      flash('냠냠! 맛있어요 😋');
+      break;
+    case 'play':
+      if (pet.energy < 10) { flash('너무 피곤해요... 💤'); return; }
+      pet.happy  = Math.min(100, pet.happy  + 22);
+      pet.energy = Math.max(0,   pet.energy - 15);
+      pet.hunger = Math.max(0,   pet.hunger - 5);
+      flash('신나요! ✨');
+      break;
+    case 'sleep':
+      pet.energy = Math.min(100, pet.energy + 40);
+      pet.hunger = Math.max(0,   pet.hunger - 5);
+      flash('Zzz... 💤');
+      break;
+    case 'wash':
+      pet.clean = Math.min(100, pet.clean + 35);
+      pet.happy = Math.min(100, pet.happy  + 5);
+      flash('개운해요! 🛁');
+      break;
+    case 'medicine':
+      if (pet.sick) {
+        pet.sick   = false;
+        pet.energy = Math.min(100, pet.energy + 20);
+        flash('이제 다 나았어요! 💊');
+      }
+      break;
+  }
+  advanceStage();
+  updateUI();
+  savePet();
+}
+
+// ── MOOD TEXT ──
+const MOODS = [
+  '낮잠 자고 싶다~',
+  '오늘 기분 좋아요!',
+  '같이 놀아요 🎾',
+  '뭔가 맛있는 게 먹고 싶어...',
+  '여기 있었구나! 😊',
+];
+function getMood() {
+  if (!pet) return '...';
+  if (pet.stage === 0) return '알에서 깨어나는 중... 🥚';
+  if (pet.sick)        return '아파요... 약 주세요 💊';
+  if (pet.hunger < 20) return '배고파요! 🍖';
+  if (pet.energy < 20) return '졸려요... 💤';
+  if (pet.clean  < 20) return '냄새나요... 🛁';
+  if (pet.happy  < 20) return '심심해요 😶';
+  if (pet.happy  > 80 && pet.hunger > 70) return '행복해요! ✨';
+  return MOODS[Math.floor(Date.now() / 6000) % MOODS.length];
+}
+
+// ── UI UPDATE ──
+const STAGES = ['EGG','BABY','TEEN','ADULT','EVOLVED'];
+
+function updateUI() {
+  if (!pet) return;
+  ['hunger','happy','energy','clean'].forEach(s => {
+    const v = Math.round(pet[s]);
+    document.getElementById(`b-${s}`).style.width = v + '%';
+    document.getElementById(`n-${s}`).textContent = v;
+    document.getElementById(`b-${s}`).style.opacity = v < 25 ? '0.5' : '1';
+  });
+  document.getElementById('mood-bubble').textContent = moodOverride || getMood();
+  const sw = document.getElementById('sick-warn');
+  const bm = document.getElementById('btn-med');
+  sw.style.display = pet.sick ? 'block' : 'none';
+  bm.style.display = pet.sick ? 'block' : 'none';
+  document.getElementById('lbl-stage').textContent = STAGES[pet.stage] || 'ADULT';
+  document.getElementById('lbl-name').textContent =
+    `${nickname.toUpperCase()} · ${pet.type.toUpperCase()}`;
+}
+
+// ── GAME START ──
+function startGame() {
+  show('s-game');
+  // Jump link: pass nickname as query param
+  document.getElementById('jump-link').href =
+    `pet-jump.html?nick=${encodeURIComponent(nickname)}`;
+
+  if (tickTimer) clearInterval(tickTimer);
+  tickTimer = setInterval(() => {
+    if (!pet) return;
+    pet.hunger = Math.max(0, pet.hunger - 0.5);
+    pet.happy  = Math.max(0, pet.happy  - 0.3);
+    pet.energy = Math.max(0, pet.energy - 0.2);
+    pet.clean  = Math.max(0, pet.clean  - 0.15);
+    checkSick();
+    updateUI();
+    savePet();
+  }, 30000);
+
+  updateUI();
+  if (animReq) cancelAnimationFrame(animReq);
+  (function loop() { animReq = requestAnimationFrame(loop); renderPet(); })();
+}
+
+// ── PET RENDERING ──
+function renderPet() {
+  const canvas = document.getElementById('game-canvas');
+  if (!canvas || !pet) return;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, 192, 192);
+
+  // Background
+  const g = ctx.createRadialGradient(96,86,8,96,96,90);
+  g.addColorStop(0, '#0f0f20'); g.addColorStop(1, '#080812');
+  ctx.fillStyle = g; ctx.fillRect(0,0,192,192);
+
+  breath += 0.04;
+  const bs = 1 + Math.sin(breath) * 0.018;
+  ctx.save();
+  ctx.translate(96, 86);
+  ctx.scale(bs, bs);
+  ctx.translate(-96, -86);
+
+  // center: logical 32x32 in a 64x64 logical canvas
+  // sprite 16 wide x ~22 tall, ox=24 oy=4 → pixels (72,12)
+  const ox = 24, oy = 4;
+  drawPet(ctx, ox, oy, pet.type, pet.stage);
+  ctx.restore();
+
+  // Floating hearts when happy
+  if (pet.happy > 70 && !pet.sick) {
+    ctx.font = '11px serif';
+    ctx.fillStyle = '#ff88cc';
+    ctx.globalAlpha = 0.25 + Math.sin(breath * 1.5) * 0.15;
+    ctx.fillText('♥', 148 + Math.sin(breath) * 6, 48 + Math.cos(breath * 0.7) * 10);
+    ctx.fillText('♥', 136 + Math.sin(breath * 1.3) * 4, 62 + Math.sin(breath * 0.9) * 8);
+    ctx.globalAlpha = 1;
+  }
+  // Zzz when tired
+  if (pet.energy < 30 && !pet.sick) {
+    ctx.font = 'bold 10px monospace';
+    ctx.fillStyle = '#8888ff';
+    ctx.globalAlpha = 0.35 + Math.sin(breath * 2) * 0.25;
+    ctx.fillText('z', 148 + Math.sin(breath) * 4, 55);
+    ctx.fillText('Z', 153 + Math.sin(breath * 0.8) * 3, 44);
+    ctx.globalAlpha = 1;
+  }
+  // Stink when dirty
+  if (pet.clean < 25 && !pet.sick) {
+    ctx.font = '11px serif';
+    ctx.fillStyle = '#88cc44';
+    ctx.globalAlpha = 0.3 + Math.sin(breath * 1.2) * 0.2;
+    ctx.fillText('~', 44 + Math.sin(breath) * 5, 50 + Math.cos(breath) * 6);
+    ctx.globalAlpha = 1;
+  }
+
+  // Stage indicator dots at bottom
+  const stages = 5;
+  for (let i = 0; i < stages; i++) {
+    ctx.beginPath();
+    ctx.arc(96 - (stages-1)*6 + i*12, 175, 3, 0, Math.PI*2);
+    ctx.fillStyle = i <= pet.stage ? '#ff88cc' : '#1e1e2e';
+    ctx.fill();
+  }
+}
+
+// ── PANIC MODE ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'p' || e.key === 'P') togglePanic();
+  if (e.key === 'Escape') hidePanic();
+});
+function togglePanic() { document.getElementById('panic').classList.toggle('show'); }
+function hidePanic()   { document.getElementById('panic').classList.remove('show'); }
+</script>
+</body>
+</html>
