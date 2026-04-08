@@ -287,18 +287,18 @@ body.widget a.back { display: none; }
 </head>
 <body>
 <h1>Slot Machine</h1>
-<p class="subtitle">spin · match · survive</p>
+<p class="subtitle">돌리고 · 맞추고 · 버텨라</p>
 
 <div class="hud">
-  <div>Coins <span class="val" id="hud-coins">500</span></div>
-  <div>Spins <span class="val" id="hud-spins">0</span></div>
-  <div>Best <span class="val" id="hud-best">0</span></div>
+  <div>코인 <span class="val" id="hud-coins">500</span></div>
+  <div>스핀 <span class="val" id="hud-spins">0</span></div>
+  <div>최고 <span class="val" id="hud-best">0</span></div>
 </div>
 
 <div class="rent-section">
   <div class="rent-header">
-    <span>Next rent in <span id="rent-count">10</span> spins</span>
-    <span class="due">Due: <span id="rent-due">150</span>🪙</span>
+    <span>목표까지 <span id="rent-count">10</span>번 남음</span>
+    <span class="due">필요: <span id="rent-due">150</span>🪙</span>
   </div>
   <div class="rent-bar-wrap"><div class="rent-bar" id="rent-bar"></div></div>
 </div>
@@ -329,19 +329,19 @@ body.widget a.back { display: none; }
   </div>
 
   <div class="bet-row">
-    <span class="bet-label">BET</span>
+    <span class="bet-label">배팅</span>
     <button class="bet-btn" onclick="changeBet(-5)">−</button>
     <span class="bet-val" id="bet-val">10</span>
     <button class="bet-btn" onclick="changeBet(5)">+</button>
   </div>
 
-  <button id="btn-spin" onclick="spin()">SPIN  [SPACE]</button>
+  <button id="btn-spin" onclick="spin()">스핀  [SPACE]</button>
 </div>
 
 <div id="msg"></div>
 
 <table class="paytable">
-  <thead><tr><th>Symbol</th><th>×3</th><th>×2</th></tr></thead>
+  <thead><tr><th>심볼</th><th>×3</th><th>×2</th></tr></thead>
   <tbody>
     <tr><td>🍒</td><td>×2</td><td>×0.8</td></tr>
     <tr><td>🍊 🍋</td><td>×2.5</td><td>×0.8</td></tr>
@@ -352,14 +352,14 @@ body.widget a.back { display: none; }
   </tbody>
 </table>
 
-<a class="back" href="stealth-games-hub.html">← Back to Hub</a>
+<a class="back" href="stealth-games-hub.html">← 허브로</a>
 
 <!-- RETIRE OVERLAY -->
 <div id="retire-screen">
-  <h2>EVICTED</h2>
-  <p class="retire-sub" id="retire-reason">집주인이 문을 두드렸다.<br>더 이상 머물 수 없어.</p>
+  <h2>게임 종료</h2>
+  <p class="retire-sub" id="retire-reason">목표 코인을 채우지 못했어요.<br>다음엔 더 잘 할 수 있을 거예요.</p>
   <p class="retire-stats" id="retire-stats"></p>
-  <button class="btn-restart" onclick="restartGame()">Try Again</button>
+  <button class="btn-restart" onclick="restartGame()">다시 도전</button>
 </div>
 
 <!-- PANIC (P key) -->
@@ -583,18 +583,18 @@ function collectRent() {
   if (coins >= due) {
     coins -= due;
     rentStage++;
-    setMsg(`월세 ${due}🪙 납부 완료. 다음: ${rentDue()}🪙`, '#ff8844');
+    setMsg(`목표 달성! ${due}🪙 차감. 다음 목표: ${rentDue()}🪙`, '#ff8844');
   } else {
-    showRetire(`이번 달 월세 ${due}🪙를 못 냈어요.`);
+    showRetire(`코인이 부족해서 ${due}🪙 목표를 채우지 못했어요.`);
     return;
   }
   updateHUD();
 }
 
 function showRetire(reason) {
-  document.getElementById('retire-reason').innerHTML = reason + '<br>집주인이 자물쇠를 바꿨다.';
+  document.getElementById('retire-reason').innerHTML = reason;
   document.getElementById('retire-stats').textContent =
-    `${spins} spins · 최고 ${bestCoins}🪙`;
+    `${spins}번 스핀 · 최고 ${bestCoins}🪙`;
   document.getElementById('retire-screen').classList.add('show');
   document.getElementById('btn-spin').disabled = true;
 }

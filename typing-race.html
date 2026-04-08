@@ -157,41 +157,41 @@
 </head>
 <body>
 <h1>Typing Race</h1>
-<p class="subtitle">Type as fast and accurately as you can</p>
+<p class="subtitle">최대한 빠르고 정확하게 타이핑하세요</p>
 
 <div class="diff-select">
-  <button class="diff-btn active" onclick="setDiff('easy',this)">Easy</button>
-  <button class="diff-btn" onclick="setDiff('normal',this)">Normal</button>
-  <button class="diff-btn" onclick="setDiff('hard',this)">Hard</button>
+  <button class="diff-btn active" onclick="setDiff('easy',this)">쉬움</button>
+  <button class="diff-btn" onclick="setDiff('normal',this)">보통</button>
+  <button class="diff-btn" onclick="setDiff('hard',this)">어려움</button>
 </div>
 
 <div class="hud">
   WPM: <span id="wpm">0</span>
   &nbsp;|&nbsp;
-  ACC: <span id="acc">100%</span>
+  정확도: <span id="acc">100%</span>
   &nbsp;|&nbsp;
-  Time: <span id="timer">0s</span>
+  시간: <span id="timer">0s</span>
 </div>
 
 <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
 
 <div id="passage-box"></div>
-<input id="input-field" type="text" placeholder="Click here and start typing..." autocomplete="off" spellcheck="false">
+<input id="input-field" type="text" placeholder="클릭 후 타이핑 시작..." autocomplete="off" spellcheck="false">
 
 <div class="controls">
-  <button onclick="newGame()">New Passage</button>
+  <button onclick="newGame()">새 지문</button>
 </div>
 
 <div id="result-box">
-  <h2>COMPLETE!</h2>
+  <h2>완료!</h2>
   <div class="stats-grid">
     <div class="stat"><span id="res-wpm">0</span>WPM</div>
-    <div class="stat"><span id="res-acc">0%</span>Accuracy</div>
-    <div class="stat"><span id="res-time">0s</span>Time</div>
+    <div class="stat"><span id="res-acc">0%</span>정확도</div>
+    <div class="stat"><span id="res-time">0s</span>시간</div>
   </div>
 </div>
 
-<a class="back" href="stealth-games-hub.html">← Back to Hub</a>
+<a class="back" href="stealth-games-hub.html">← 허브로</a>
 
 <script>
 const IS_WIDGET = new URLSearchParams(location.search).has('widget');

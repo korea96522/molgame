@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stealth Games — Hub</title>
+<title>Stealth Games — 허브</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -65,6 +65,7 @@
     opacity: 0;
     transition: opacity 0.3s;
     border-radius: inherit;
+    pointer-events: none;
   }
   .game-card:hover::before { opacity: 0.04; }
   .game-card:hover { border-color: var(--accent1); transform: translateY(-3px); }
@@ -98,11 +99,12 @@
     font-family: inherit;
     font-size: 0.8rem;
     letter-spacing: 2px;
-    text-transform: uppercase;
     transition: all 0.2s;
     border-radius: 4px;
+    position: relative;
+    z-index: 1;
   }
-  .card-btn:hover { background: rgba(0,255,136,0.1); }
+  .card-btn:hover { background: #ffffff18; }
   .card-btn.coming-soon {
     border-color: #333;
     color: #444;
@@ -123,7 +125,6 @@
     font-family: inherit;
     font-size: 0.8rem;
     letter-spacing: 2px;
-    text-transform: uppercase;
     cursor: pointer;
     border-radius: 4px;
     transition: all .2s;
@@ -142,8 +143,6 @@
     border: 1px solid;
     text-transform: uppercase;
   }
-  .badge.live { border-color: #00ff8844; color: #00ff88; background: #00ff8811; }
-  .badge.new { border-color: #00aaff44; color: #00aaff; background: #00aaff11; }
   .badge.soon { border-color: #33333388; color: #555; background: transparent; }
 
   /* ── Footer ── */
@@ -177,7 +176,7 @@
 
 <header>
   <div class="logo">Stealth Games</div>
-  <p class="tagline">minimalist · browser · fun</p>
+  <p class="tagline">작고 · 조용하게 · 즐기는 브라우저 게임</p>
   <div class="divider"></div>
 </header>
 
@@ -185,131 +184,119 @@
 
   <!-- Number Match -->
   <div class="game-card" style="--accent1:#00ff88;--accent2:#00cc66;">
-    <span class="badge live">LIVE</span>
     <div class="card-icon">🔢</div>
     <div class="card-title">Number Match</div>
     <div class="card-desc">
-      Flip cards and find matching number pairs. Race against the clock with
-      three grid sizes: 4×4, 4×6, and 6×6.
+      카드를 뒤집어 같은 숫자 쌍을 찾으세요. 4×4, 4×6, 6×6 세 가지 크기로 기억력을 시험해요.
     </div>
     <div class="card-tags">
-      <span class="tag">Memory</span>
-      <span class="tag">Puzzle</span>
-      <span class="tag">Solo</span>
+      <span class="tag">기억력</span>
+      <span class="tag">퍼즐</span>
+      <span class="tag">혼자</span>
     </div>
-    <a class="card-btn" href="number-match.html">Play Now</a>
+    <a class="card-btn" href="number-match.html">바로 플레이</a>
   </div>
 
   <!-- Typing Race -->
   <div class="game-card" style="--accent1:#00aaff;--accent2:#0077cc;">
-    <span class="badge new">NEW</span>
     <div class="card-icon">⌨️</div>
     <div class="card-title">Typing Race</div>
     <div class="card-desc">
-      How fast can you type? Choose Easy, Normal, or Hard passages and track
-      your WPM and accuracy in real time.
+      얼마나 빨리 타이핑할 수 있나요? 쉬움·보통·어려움 중 선택해 WPM과 정확도를 실시간으로 확인해보세요.
     </div>
     <div class="card-tags">
-      <span class="tag">Typing</span>
-      <span class="tag">Speed</span>
-      <span class="tag">Skill</span>
+      <span class="tag">타이핑</span>
+      <span class="tag">속도</span>
+      <span class="tag">실력</span>
     </div>
-    <a class="card-btn" href="typing-race.html" style="--accent1:#00aaff;">Play Now</a>
+    <a class="card-btn" href="typing-race.html" style="--accent1:#00aaff;">바로 플레이</a>
   </div>
 
   <!-- Mini Pet -->
   <div class="game-card" style="--accent1:#ff88cc;--accent2:#cc5599;">
-    <span class="badge new">NEW</span>
     <div class="card-icon">🐾</div>
     <div class="card-title">Mini Pet</div>
     <div class="card-desc">
-      키우는 펫 게임. 닉네임으로 저장되고 창을 닫아도 살아있어요.
+      닉네임으로 저장되고 창을 닫아도 살아있어요.
       강아지 · 고양이 · 곰 중 선택. P키로 즉시 숨기기.
     </div>
     <div class="card-tags">
-      <span class="tag">Pet</span>
-      <span class="tag">Idle</span>
-      <span class="tag">Stealth</span>
+      <span class="tag">펫</span>
+      <span class="tag">방치형</span>
+      <span class="tag">스텔스</span>
     </div>
-    <a class="card-btn" href="mini-pet.html" style="--accent1:#ff88cc;">Play Now</a>
+    <a class="card-btn" href="mini-pet.html" style="--accent1:#ff88cc;">바로 플레이</a>
   </div>
 
   <!-- Pet Jump -->
   <div class="game-card" style="--accent1:#aa44ff;--accent2:#7722cc;">
-    <span class="badge new">NEW</span>
     <div class="card-icon">🦘</div>
     <div class="card-title">Pet Jump</div>
     <div class="card-desc">
-      내 펫이 직접 뛰는 점프 게임. 펫의 에너지 → 점프력, 행복도 → 속도에
-      영향. 행복도 70↑이면 더블점프 가능.
+      내 펫이 직접 뛰는 점프 게임. 펫의 에너지는 점프력에, 행복도는 속도에 영향을 줘요.
     </div>
     <div class="card-tags">
-      <span class="tag">Runner</span>
-      <span class="tag">Reflex</span>
-      <span class="tag">Linked</span>
+      <span class="tag">달리기</span>
+      <span class="tag">반사신경</span>
+      <span class="tag">연동</span>
     </div>
-    <a class="card-btn" href="pet-jump.html" style="--accent1:#aa44ff;">Play Now</a>
+    <a class="card-btn" href="pet-jump.html" style="--accent1:#aa44ff;">바로 플레이</a>
   </div>
 
   <!-- Mini 2048 -->
   <div class="game-card" style="--accent1:#ffaa00;--accent2:#cc8800;">
-    <span class="badge new">NEW</span>
     <div class="card-icon">🔲</div>
     <div class="card-title">Mini 2048</div>
     <div class="card-desc">
-      타일을 합쳐서 2048을 만들어요. 화살표 키 또는 스와이프로 조작.
-      최고점수 자동 저장.
+      타일을 합쳐서 2048을 만들어요. 화살표 키 또는 스와이프로 조작. 최고 점수 자동 저장.
     </div>
     <div class="card-tags">
-      <span class="tag">Puzzle</span>
-      <span class="tag">Strategy</span>
-      <span class="tag">Classic</span>
+      <span class="tag">퍼즐</span>
+      <span class="tag">전략</span>
+      <span class="tag">클래식</span>
     </div>
-    <a class="card-btn" href="mini-2048.html" style="--accent1:#ffaa00;">Play Now</a>
+    <a class="card-btn" href="mini-2048.html" style="--accent1:#ffaa00;">바로 플레이</a>
   </div>
 
   <!-- Slot Machine -->
   <div class="game-card" style="--accent1:#ffaa00;--accent2:#cc8800;">
-    <span class="badge new">NEW</span>
     <div class="card-icon">🎰</div>
     <div class="card-title">Slot Machine</div>
     <div class="card-desc">
-      스핀하고 매칭하고 버텨라. 월세를 못 내면 퇴거당해요.
-      두 개 일치 시 세 번째 릴이 천천히 돌아가는 심리전.
+      슬롯을 돌려서 목표 코인을 기록하지 못하면 게임이 끝나요. 두 개 일치 시 세 번째 릴이 천천히 돌아가는 심리전.
     </div>
     <div class="card-tags">
-      <span class="tag">Luck</span>
-      <span class="tag">Idle</span>
-      <span class="tag">Stealth</span>
+      <span class="tag">운</span>
+      <span class="tag">방치형</span>
+      <span class="tag">스텔스</span>
     </div>
-    <a class="card-btn" href="slot-machine.html" style="--accent1:#ffaa00;">Play Now</a>
+    <a class="card-btn" href="slot-machine.html" style="--accent1:#ffaa00;">바로 플레이</a>
   </div>
 
   <!-- Aim Trainer placeholder -->
   <div class="game-card" style="--accent1:#ff8800;--accent2:#cc6600;">
-    <span class="badge soon">COMING SOON</span>
+    <span class="badge soon">준비 중</span>
     <div class="card-icon">🎯</div>
     <div class="card-title">Aim Trainer</div>
     <div class="card-desc">
-      Click targets as fast as possible. Sharpen your mouse precision with
-      progressive difficulty.
+      타깃을 최대한 빠르게 클릭하세요. 단계별 난이도로 마우스 정확도를 높여가요.
     </div>
     <div class="card-tags">
-      <span class="tag">Reflexes</span>
-      <span class="tag">Speed</span>
+      <span class="tag">순발력</span>
+      <span class="tag">속도</span>
     </div>
-    <span class="card-btn coming-soon">Coming Soon</span>
+    <span class="card-btn coming-soon">준비 중</span>
   </div>
 
 </div>
 
 <div class="widget-launch">
   <button class="widget-btn" onclick="openWidget()">위젯으로 열기 ↗</button>
-  <p class="widget-hint">360×580 팝업 · 4개 게임 탭</p>
+  <p class="widget-hint">360×580 팝업 · 6개 게임 탭</p>
 </div>
 
 <footer>
-  <p>Stealth Games &mdash; all games run in your browser, no install needed</p>
+  <p>모든 게임은 브라우저에서 바로 실행돼요. 설치 불필요.</p>
   <p style="margin-top:8px;"><a href="https://github.com/korea96522/molgame">GitHub</a></p>
 </footer>
 
@@ -318,7 +305,7 @@ function openWidget() {
   window.open(
     'widget.html',
     'stealth_widget',
-    'width=360,height=600,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,resizable=0'
+    'width=360,height=600,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,resizable=1'
   );
 }
 </script>

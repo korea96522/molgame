@@ -232,16 +232,16 @@ body.widget a.back { display: none; }
 <body>
 
 <h1>2048</h1>
-<p class="subtitle">merge tiles to reach 2048</p>
+<p class="subtitle">타일을 합쳐 2048을 만들어요</p>
 
 <div class="hud">
   <div class="score-box">
-    <span class="score-label">Score</span>
+    <span class="score-label">점수</span>
     <span class="score-val" id="score-val">0</span>
   </div>
-  <button class="btn" onclick="newGame()">New Game</button>
+  <button class="btn" onclick="newGame()">새 게임</button>
   <div class="score-box">
-    <span class="score-label">Best</span>
+    <span class="score-label">최고</span>
     <span class="score-val" id="best-val">0</span>
   </div>
 </div>
@@ -266,7 +266,7 @@ body.widget a.back { display: none; }
 </div>
 
 <p class="hint">화살표 키 또는 스와이프</p>
-<a class="back" href="stealth-games-hub.html">← Back to Hub</a>
+<a class="back" href="stealth-games-hub.html">← 허브로</a>
 
 <script>
 // ── WIDGET MODE ──
@@ -393,13 +393,13 @@ function showOverlay(type) {
   const title = document.getElementById('overlay-title');
   const msg   = document.getElementById('overlay-msg');
   if (type === 'win') {
-    title.textContent = 'REACHED!';
+    title.textContent = '2048 달성!';
     title.className = 'win-text';
-    msg.textContent = `Score: ${score}`;
+    msg.textContent = `점수: ${score}`;
   } else {
-    title.textContent = 'GAME OVER';
+    title.textContent = '게임 오버';
     title.className = 'lose-text';
-    msg.textContent = `Final score: ${score}`;
+    msg.textContent = `최종 점수: ${score}`;
   }
   el.classList.add('show');
 }

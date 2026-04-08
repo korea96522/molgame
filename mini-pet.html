@@ -257,15 +257,15 @@ body.widget .hint { display: none; }
 <!-- ── SCREEN: WELCOME ── -->
 <div id="s-welcome" class="screen active">
   <h1>Mini Pet</h1>
-  <p class="sub">your secret desktop companion</p>
+  <p class="sub">나만의 비밀 데스크톱 친구</p>
   <input type="text" id="nick-input" placeholder="닉네임 입력" maxlength="12" autocomplete="off">
   <button class="btn" onclick="doStart()">시작하기</button>
 </div>
 
 <!-- ── SCREEN: CHARACTER SELECT ── -->
 <div id="s-select" class="screen">
-  <h1>Choose Pet</h1>
-  <p class="sub">pick your companion</p>
+  <h1>펫 선택</h1>
+  <p class="sub">함께할 친구를 골라요</p>
   <div class="char-row">
     <div class="char-opt" onclick="choosePet('dog')">
       <canvas id="prev-dog" width="48" height="66" style="image-rendering:pixelated"></canvas>
@@ -286,7 +286,7 @@ body.widget .hint { display: none; }
 <div id="s-game" class="screen">
   <div class="pet-header">
     <span id="lbl-name">PET</span>
-    <span id="lbl-stage">EGG</span>
+    <span id="lbl-stage">알</span>
   </div>
   <canvas id="game-canvas" width="192" height="192"></canvas>
   <div id="mood-bubble">...</div>
@@ -530,7 +530,7 @@ function getMood() {
 }
 
 // ── UI UPDATE ──
-const STAGES = ['EGG','BABY','TEEN','ADULT','EVOLVED'];
+const STAGES = ['알','아기','성장중','어른','진화'];
 
 function updateUI() {
   if (!pet) return;
