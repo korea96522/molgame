@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slot Machine — Stealth Games</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 20px 40px;
+}
+h1 {
+  font-size: 2rem;
+  color: #ffaa00;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: 0 0 20px #ffaa0044;
+}
+.subtitle { color: #555; font-size: 0.82rem; letter-spacing: 2px; margin-bottom: 20px; }
+
+/* ── HUD ── */
+.hud {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 0.88rem;
+  color: #666;
+}
+.hud .val { color: #ffaa00; font-size: 1.15rem; font-weight: bold; }
+.hud .rent-warn { color: #ff4444; font-size: 0.78rem; letter-spacing: 1px; }
+
+/* ── MACHINE BODY ── */
+.machine {
+  background: #0d0d18;
+  border: 2px solid #2a2a3a;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
+  margin-bottom: 18px;
+  position: relative;
+  box-shadow: 0 0 40px #00000088, inset 0 1px 0 #ffffff08;
+}
+.machine::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ffaa0055, transparent);
+}
+
+/* ── REELS WRAPPER ── */
+.reels-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  position: relative;
+}
+/* payline glow */
+.reels-wrap::after {
+  content: '';
+  position: absolute;
+  left: -4px; right: -4px;
+  top: calc(33.33% + 1px);
+  height: calc(33.33% - 2px);
+  border: 1px solid #ffaa0033;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* ── SINGLE REEL ── */
+.reel {
+  width: 72px;
+  height: 216px; /* 3 × 72px */
+  border: 2px solid #222;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #080810;
+  position: relative;
+}
+.reel-inner {
+  display: flex;
+  flex-direction: column;
+  transition: none;
+}
+.reel-cell {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+  transition: none;
+}
+.reel.spinning .reel-inner {
+  animation: scrollReel 0.08s linear infinite;
+}
+@keyframes scrollReel {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-72px); }
+}
+.reel.slow .reel-inner {
+  animation: scrollReel 0.28s linear infinite;
+}
+
+/* payline row highlight */
+.reel-cell.pay { background: #ffffff04; }
+
+/* win flash */
+.reel.win .reel-cell.pay {
+  animation: cellWin 0.4s ease-out 2;
+}
+@keyframes cellWin {
+  0%   { background: #ffaa0022; }
+  50%  { background: #ffaa0055; }
+  100% { background: #ffffff04; }
+}
+
+/* ── BET CONTROLS ── */
+.bet-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.bet-label { color: #555; font-size: 0.82rem; letter-spacing: 1px; }
+.bet-btn {
+  background: transparent;
+  border: 1px solid #333;
+  color: #666;
+  width: 28px; height: 28px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all .15s;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.bet-btn:hover { border-color: #ffaa00; color: #ffaa00; }
+.bet-val { color: #ffaa00; font-size: 1rem; font-weight: bold; min-width: 36px; text-align: center; }
+
+/* ── SPIN BUTTON ── */
+#btn-spin {
+  width: 100%;
+  background: transparent;
+  border: 2px solid #ffaa00;
+  color: #ffaa00;
+  padding: 11px 0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+  border-radius: 6px;
+}
+#btn-spin:hover:not(:disabled) { background: #ffaa0018; box-shadow: 0 0 12px #ffaa0033; }
+#btn-spin:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── RESULT MESSAGE ── */
+#msg {
+  min-height: 22px;
+  font-size: 0.88rem;
+  letter-spacing: 2px;
+  color: #ffaa00;
+  text-align: center;
+  margin-top: 14px;
+}
+
+/* ── PAYTABLE ── */
+.paytable {
+  width: min(320px, 100%);
+  font-size: 0.75rem;
+  color: #444;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.paytable thead th { color: #333; padding-bottom: 6px; font-weight: normal; }
+.paytable td { padding: 3px 6px; text-align: center; }
+.paytable td:first-child { text-align: left; font-size: 1rem; }
+.paytable tr.hi td { color: #ffaa0088; }
+
+/* ── RENT BAR ── */
+.rent-section {
+  width: min(320px, 100%);
+  margin-bottom: 18px;
+}
+.rent-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #444;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.rent-header .due { color: #ff6666; }
+.rent-bar-wrap {
+  height: 4px;
+  background: #111;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.rent-bar {
+  height: 100%;
+  background: linear-gradient(to right, #ffaa00, #ff6600);
+  width: 0%;
+  transition: width .3s;
+}
+
+/* ── RETIRE OVERLAY ── */
+#retire-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0a0a0fee;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+#retire-screen.show { display: flex; }
+#retire-screen h2 { font-size: 2rem; color: #ff4444; letter-spacing: 6px; }
+#retire-screen .retire-sub { color: #555; font-size: 0.85rem; letter-spacing: 2px; text-align: center; max-width: 280px; line-height: 1.6; }
+#retire-screen .retire-stats { color: #888; font-size: 0.9rem; letter-spacing: 1px; text-align: center; }
+.btn-restart {
+  background: transparent;
+  border: 1px solid #ffaa00;
+  color: #ffaa00;
+  padding: 9px 28px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+  border-radius: 4px;
+}
+.btn-restart:hover { background: #ffaa0018; }
+
+/* ── PANIC OVERLAY ── */
+#panic {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #fff;
+}
+#panic.show { display: block; }
+#panic iframe { width: 100%; height: 100%; border: none; }
+
+/* ── BACK LINK ── */
+a.back {
+  color: #333;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  transition: color .2s;
+}
+a.back:hover { color: #ffaa00; }
+
+/* ── WIDGET MODE ── */
+body.widget { padding: 10px 8px 12px; min-height: auto; }
+body.widget h1 { font-size: 1.3rem; margin-bottom: 2px; }
+body.widget .subtitle { margin-bottom: 12px; font-size: 0.75rem; }
+body.widget .hud { gap: 16px; margin-bottom: 12px; font-size: 0.8rem; }
+body.widget .hud .val { font-size: 1rem; }
+body.widget .machine { padding: 12px 12px 12px; margin-bottom: 12px; }
+body.widget .reel { width: 58px; height: 174px; }
+body.widget .reel-cell { width: 58px; height: 58px; font-size: 1.6rem; }
+body.widget .reels-wrap { gap: 8px; }
+body.widget #btn-spin { padding: 8px 0; font-size: 0.82rem; }
+body.widget .paytable { display: none; }
+body.widget .rent-section { width: 100%; }
+body.widget a.back { display: none; }
+</style>
+</head>
+<body>
+<h1>Slot Machine</h1>
+<p class="subtitle">spin · match · survive</p>
+
+<div class="hud">
+  <div>Coins <span class="val" id="hud-coins">500</span></div>
+  <div>Spins <span class="val" id="hud-spins">0</span></div>
+  <div>Best <span class="val" id="hud-best">0</span></div>
+</div>
+
+<div class="rent-section">
+  <div class="rent-header">
+    <span>Next rent in <span id="rent-count">10</span> spins</span>
+    <span class="due">Due: <span id="rent-due">150</span>🪙</span>
+  </div>
+  <div class="rent-bar-wrap"><div class="rent-bar" id="rent-bar"></div></div>
+</div>
+
+<div class="machine">
+  <div class="reels-wrap">
+    <div class="reel" id="reel0">
+      <div class="reel-inner" id="ri0">
+        <div class="reel-cell" id="r0t"></div>
+        <div class="reel-cell pay" id="r0m"></div>
+        <div class="reel-cell" id="r0b"></div>
+      </div>
+    </div>
+    <div class="reel" id="reel1">
+      <div class="reel-inner" id="ri1">
+        <div class="reel-cell" id="r1t"></div>
+        <div class="reel-cell pay" id="r1m"></div>
+        <div class="reel-cell" id="r1b"></div>
+      </div>
+    </div>
+    <div class="reel" id="reel2">
+      <div class="reel-inner" id="ri2">
+        <div class="reel-cell" id="r2t"></div>
+        <div class="reel-cell pay" id="r2m"></div>
+        <div class="reel-cell" id="r2b"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bet-row">
+    <span class="bet-label">BET</span>
+    <button class="bet-btn" onclick="changeBet(-5)">−</button>
+    <span class="bet-val" id="bet-val">10</span>
+    <button class="bet-btn" onclick="changeBet(5)">+</button>
+  </div>
+
+  <button id="btn-spin" onclick="spin()">SPIN  [SPACE]</button>
+</div>
+
+<div id="msg"></div>
+
+<table class="paytable">
+  <thead><tr><th>Symbol</th><th>×3</th><th>×2</th></tr></thead>
+  <tbody>
+    <tr><td>🍒</td><td>×2</td><td>×0.8</td></tr>
+    <tr><td>🍊 🍋</td><td>×2.5</td><td>×0.8</td></tr>
+    <tr><td>🔔</td><td>×4</td><td>×1.2</td></tr>
+    <tr class="hi"><td>💎</td><td>×6</td><td>×1.5</td></tr>
+    <tr class="hi"><td>⭐</td><td>×10</td><td>×2</td></tr>
+    <tr class="hi"><td>7️⃣</td><td>×25</td><td>×3</td></tr>
+  </tbody>
+</table>
+
+<a class="back" href="stealth-games-hub.html">← Back to Hub</a>
+
+<!-- RETIRE OVERLAY -->
+<div id="retire-screen">
+  <h2>EVICTED</h2>
+  <p class="retire-sub" id="retire-reason">집주인이 문을 두드렸다.<br>더 이상 머물 수 없어.</p>
+  <p class="retire-stats" id="retire-stats"></p>
+  <button class="btn-restart" onclick="restartGame()">Try Again</button>
+</div>
+
+<!-- PANIC (P key) -->
+<div id="panic">
+  <iframe src="about:blank" id="panic-frame"></iframe>
+</div>
+
+<script>
+const IS_WIDGET = new URLSearchParams(location.search).has('widget');
+if (IS_WIDGET) document.body.classList.add('widget');
+
+/* ── SYMBOLS ── */
+const SYMS  = ['🍒','🍊','🍋','🔔','💎','⭐','7️⃣'];
+const WGTS  = [5,   4,   4,   3,   2,   2,   1  ];
+const TOTAL_W = WGTS.reduce((a,b)=>a+b,0); // 21
+
+const MULT3 = { '🍒':2, '🍊':2.5,'🍋':2.5,'🔔':4,'💎':6,'⭐':10,'7️⃣':25 };
+const MULT2 = { '🍒':0.8,'🍊':0.8,'🍋':0.8,'🔔':1.2,'💎':1.5,'⭐':2,'7️⃣':3 };
+
+function randSym() {
+  let r = Math.random() * TOTAL_W;
+  for (let i=0;i<SYMS.length;i++) { r -= WGTS[i]; if (r<=0) return SYMS[i]; }
+  return SYMS[SYMS.length-1];
+}
+
+/* ── STATE ── */
+let coins = 500, spins = 0, bet = 10, rentStage = 0, spinsSinceRent = 0;
+let spinning = false, reel3Slow = false;
+let bestCoins = parseInt(localStorage.getItem('slot_best') || '0');
+const RENT_BASE = 150, RENT_INC = 100, RENT_EVERY = 10;
+
+function rentDue() { return RENT_BASE + RENT_INC * rentStage; }
+
+/* ── REEL DOM HELPERS ── */
+const CELLS = [
+  { t: document.getElementById('r0t'), m: document.getElementById('r0m'), b: document.getElementById('r0b') },
+  { t: document.getElementById('r1t'), m: document.getElementById('r1m'), b: document.getElementById('r1b') },
+  { t: document.getElementById('r2t'), m: document.getElementById('r2m'), b: document.getElementById('r2b') },
+];
+
+function setReel(i, top, mid, bot) {
+  CELLS[i].t.textContent = top;
+  CELLS[i].m.textContent = mid;
+  CELLS[i].b.textContent = bot;
+}
+
+function randomizeReel(i) {
+  setReel(i, randSym(), randSym(), randSym());
+}
+
+/* animate spinning with JS-driven random symbol cycling */
+let spinIntervals = [null, null, null];
+
+function startSpinning(i, speed) {
+  clearInterval(spinIntervals[i]);
+  const el = document.getElementById('reel'+i);
+  el.classList.add('spinning');
+  el.classList.remove('slow');
+  spinIntervals[i] = setInterval(() => randomizeReel(i), speed);
+}
+
+function setSlowSpin(i) {
+  clearInterval(spinIntervals[i]);
+  const el = document.getElementById('reel'+i);
+  el.classList.remove('spinning');
+  el.classList.add('slow');
+  spinIntervals[i] = setInterval(() => randomizeReel(i), 260);
+}
+
+function stopSpinning(i, top, mid, bot) {
+  clearInterval(spinIntervals[i]);
+  const el = document.getElementById('reel'+i);
+  el.classList.remove('spinning','slow');
+  setReel(i, top, mid, bot);
+}
+
+function flashWin(i) {
+  const el = document.getElementById('reel'+i);
+  el.classList.remove('win');
+  void el.offsetWidth;
+  el.classList.add('win');
+  setTimeout(() => el.classList.remove('win'), 900);
+}
+
+/* ── UI UPDATES ── */
+function updateHUD() {
+  document.getElementById('hud-coins').textContent = coins;
+  document.getElementById('hud-spins').textContent = spins;
+  if (coins > bestCoins) {
+    bestCoins = coins;
+    localStorage.setItem('slot_best', bestCoins);
+  }
+  document.getElementById('hud-best').textContent = bestCoins;
+  // rent bar
+  const progress = spinsSinceRent / RENT_EVERY;
+  document.getElementById('rent-bar').style.width = (progress * 100) + '%';
+  document.getElementById('rent-count').textContent = RENT_EVERY - spinsSinceRent;
+  document.getElementById('rent-due').textContent = rentDue();
+}
+
+function setMsg(text, color) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.style.color = color || '#ffaa00';
+}
+
+function changeBet(delta) {
+  bet = Math.max(5, Math.min(bet + delta, Math.min(100, coins)));
+  document.getElementById('bet-val').textContent = bet;
+}
+
+/* ── SPIN ── */
+async function spin() {
+  if (spinning) return;
+  if (coins < bet) { setMsg('코인이 부족해요!', '#ff4444'); return; }
+
+  spinning = true;
+  reel3Slow = false;
+  document.getElementById('btn-spin').disabled = true;
+  setMsg('');
+
+  coins -= bet;
+  spins++;
+  spinsSinceRent++;
+  updateHUD();
+
+  // determine results
+  const r0 = randSym(), r1 = randSym(), r2 = randSym();
+  const match01 = (r0 === r1);
+
+  // near-miss: if 01 match but r2 won't match, 38% chance top of reel2 shows the match symbol
+  let r2top = randSym(), r2bot = randSym();
+  let finalR2 = r2;
+  if (match01 && r2 !== r0 && Math.random() < 0.38) {
+    r2top = r0; // tantalizingly close
+  }
+
+  // start all reels spinning
+  startSpinning(0, 75);
+  startSpinning(1, 75);
+  startSpinning(2, 75);
+
+  // stop reel 0 at T+820ms
+  await delay(820);
+  stopSpinning(0, randSym(), r0, randSym());
+
+  // stop reel 1 at T+820+360ms
+  await delay(360);
+  stopSpinning(1, randSym(), r1, randSym());
+
+  if (match01) {
+    // dramatic slowdown
+    reel3Slow = true;
+    setSlowSpin(2);
+    await delay(1400);
+  } else {
+    await delay(260);
+  }
+
+  // stop reel 2
+  stopSpinning(2, r2top, finalR2, r2bot);
+
+  // evaluate
+  await delay(60);
+  evaluateResult(r0, r1, finalR2);
+
+  // rent check
+  if (spinsSinceRent >= RENT_EVERY) {
+    await delay(800);
+    collectRent();
+  }
+
+  spinning = false;
+  bet = Math.min(bet, coins);
+  document.getElementById('bet-val').textContent = bet;
+  document.getElementById('btn-spin').disabled = (coins < 5);
+  updateHUD();
+}
+
+function evaluateResult(s0, s1, s2) {
+  let winAmt = 0;
+  let msg = '';
+
+  if (s0 === s1 && s1 === s2) {
+    // triple match
+    const mult = MULT3[s0] || 2;
+    winAmt = Math.round(bet * mult);
+    coins += winAmt;
+    flashWin(0); flashWin(1); flashWin(2);
+    if (s0 === '7️⃣') msg = `JACKPOT! +${winAmt}🪙`;
+    else if (s0 === '⭐' || s0 === '💎') msg = `BIG WIN! +${winAmt}🪙`;
+    else msg = `WIN! +${winAmt}🪙`;
+    setMsg(msg, '#ffaa00');
+  } else if (s0 === s1 || s1 === s2 || s0 === s2) {
+    // double match
+    const matchSym = (s0===s1) ? s0 : (s1===s2) ? s1 : s0;
+    const mult = MULT2[matchSym] || 0.8;
+    winAmt = Math.round(bet * mult);
+    if (winAmt > 0) {
+      coins += winAmt;
+      const idx0 = (s0===s1||s0===s2) ? 0 : -1;
+      const idx1 = (s0===s1||s1===s2) ? 1 : -1;
+      const idx2 = (s1===s2||s0===s2) ? 2 : -1;
+      if (idx0>=0) flashWin(idx0);
+      if (idx1>=0) flashWin(idx1);
+      if (idx2>=0) flashWin(idx2);
+      msg = `+${winAmt}🪙`;
+      setMsg(msg, '#888866');
+    } else {
+      setMsg('아깝다...', '#555');
+    }
+  } else {
+    setMsg('꽝', '#444');
+  }
+  updateHUD();
+}
+
+function collectRent() {
+  spinsSinceRent = 0;
+  const due = rentDue();
+  if (coins >= due) {
+    coins -= due;
+    rentStage++;
+    setMsg(`월세 ${due}🪙 납부 완료. 다음: ${rentDue()}🪙`, '#ff8844');
+  } else {
+    showRetire(`이번 달 월세 ${due}🪙를 못 냈어요.`);
+    return;
+  }
+  updateHUD();
+}
+
+function showRetire(reason) {
+  document.getElementById('retire-reason').innerHTML = reason + '<br>집주인이 자물쇠를 바꿨다.';
+  document.getElementById('retire-stats').textContent =
+    `${spins} spins · 최고 ${bestCoins}🪙`;
+  document.getElementById('retire-screen').classList.add('show');
+  document.getElementById('btn-spin').disabled = true;
+}
+
+function restartGame() {
+  coins = 500; spins = 0; bet = 10; rentStage = 0; spinsSinceRent = 0;
+  spinning = false; reel3Slow = false;
+  document.getElementById('retire-screen').classList.remove('show');
+  document.getElementById('btn-spin').disabled = false;
+  setMsg('');
+  initReels();
+  updateHUD();
+}
+
+function initReels() {
+  for (let i=0;i<3;i++) randomizeReel(i);
+}
+
+/* ── PANIC MODE ── */
+const panicEl = document.getElementById('panic');
+const panicFrame = document.getElementById('panic-frame');
+let panicActive = false;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'p' || e.key === 'P') {
+    if (!panicActive) {
+      panicActive = true;
+      // Fake Excel-like blank spreadsheet
+      panicFrame.srcdoc = `<!DOCTYPE html><html><head><style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Calibri,Arial,sans-serif;font-size:12px;}
+        body{background:#fff;display:flex;flex-direction:column;height:100vh;}
+        .bar{background:#217346;padding:4px 10px;color:#fff;display:flex;align-items:center;gap:16px;}
+        .bar .title{font-size:13px;font-weight:600;}
+        .bar .tabs{font-size:11px;opacity:.8;}
+        .ribbon{background:#f3f3f3;border-bottom:1px solid #ccc;padding:6px 12px;display:flex;gap:20px;color:#444;}
+        .sheet{flex:1;overflow:auto;}
+        table{border-collapse:collapse;width:100%;}
+        th,td{border:1px solid #d0d0d0;min-width:64px;height:20px;padding:0 4px;white-space:nowrap;}
+        th{background:#f8f8f8;font-weight:normal;text-align:center;color:#666;position:sticky;top:0;z-index:1;}
+        td:first-child{background:#f8f8f8;text-align:center;color:#666;min-width:28px;}
+        .sel{background:#cce8ff!important;outline:2px solid #0070c0;}
+      </style></head><body>
+      <div class="bar"><span class="title">통합 문서1 - Excel</span><span class="tabs">파일 홈 삽입 페이지 레이아웃 수식 데이터 검토 보기</span></div>
+      <div class="ribbon">붙여넣기 &nbsp;|&nbsp; 굵게 기울임 밑줄 &nbsp;|&nbsp; 자동 합계 &nbsp;|&nbsp; 정렬 및 필터</div>
+      <div class="sheet"><table>
+        <tr><th></th>${'<th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th>'.repeat(1)}</tr>
+        ${Array.from({length:30},(_,r)=>`<tr><td>${r+1}</td>${Array.from({length:10},(_,c)=>`<td${r===1&&c===1?' class="sel"':''}></td>`).join('')}</tr>`).join('')}
+      </table></div>
+      </body></html>`;
+      panicEl.classList.add('show');
+    }
+  }
+  if (e.key === 'Escape' && panicActive) {
+    panicActive = false;
+    panicEl.classList.remove('show');
+  }
+  if ((e.key === ' ' || e.key === 'Spacebar') && !panicActive) {
+    e.preventDefault();
+    spin();
+  }
+});
+
+/* ── UTILS ── */
+function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
+
+/* ── INIT ── */
+initReels();
+updateHUD();
+</script>
+</body>
+</html>
