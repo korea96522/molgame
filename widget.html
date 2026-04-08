@@ -103,10 +103,8 @@ iframe.active { display: block; }
 <div id="tabs">
   <button class="tab active" style="--accent:#ff88cc" onclick="switchTab(0)" title="미니 펫">🐾</button>
   <button class="tab"        style="--accent:#aa44ff" onclick="switchTab(1)" title="펫 점프">🦘</button>
-  <button class="tab"        style="--accent:#00ff88" onclick="switchTab(2)" title="숫자 맞추기">🔢</button>
-  <button class="tab"        style="--accent:#00aaff" onclick="switchTab(3)" title="타이핑">⌨️</button>
-  <button class="tab"        style="--accent:#ffaa00" onclick="switchTab(4)" title="2048">🔲</button>
-  <button class="tab"        style="--accent:#ffaa00" onclick="switchTab(5)" title="슬롯머신">🎰</button>
+  <button class="tab"        style="--accent:#ffaa00" onclick="switchTab(2)" title="2048">🔲</button>
+  <button class="tab"        style="--accent:#ffaa00" onclick="switchTab(3)" title="슬롯머신">🎰</button>
   <button id="btn-popout" onclick="popout()" title="새 창으로 열기">⊞</button>
 </div>
 
@@ -115,29 +113,23 @@ iframe.active { display: block; }
   <div class="loading" id="loading-1">loading...</div>
   <div class="loading" id="loading-2">loading...</div>
   <div class="loading" id="loading-3">loading...</div>
-  <div class="loading" id="loading-4">loading...</div>
-  <div class="loading" id="loading-5">loading...</div>
   <iframe id="f0" class="active" src="mini-pet.html?widget=1"></iframe>
   <iframe id="f1" src=""></iframe>
   <iframe id="f2" src=""></iframe>
   <iframe id="f3" src=""></iframe>
-  <iframe id="f4" src=""></iframe>
-  <iframe id="f5" src=""></iframe>
 </div>
 
 <script>
 const SRCS = [
   'mini-pet.html?widget=1',
   'pet-jump.html?widget=1',
-  'number-match.html?widget=1',
-  'typing-race.html?widget=1',
   'mini-2048.html?widget=1',
   'slot-machine.html?widget=1',
 ];
 
 const tabs    = document.querySelectorAll('.tab:not(#btn-popout)');
-const frames  = [0,1,2,3,4,5].map(i => document.getElementById('f'+i));
-const loaders = [0,1,2,3,4,5].map(i => document.getElementById('loading-'+i));
+const frames  = [0,1,2,3].map(i => document.getElementById('f'+i));
+const loaders = [0,1,2,3].map(i => document.getElementById('loading-'+i));
 let current = 0;
 
 // Hide loader when iframe loads
