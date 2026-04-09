@@ -620,9 +620,11 @@ let panicActive = false;
 
 document.addEventListener('keydown', e => {
   if (e.key === 'p' || e.key === 'P') {
-    if (!panicActive) {
+    if (panicActive) {
+      panicActive = false;
+      panicEl.classList.remove('show');
+    } else {
       panicActive = true;
-      // Fake Excel-like blank spreadsheet
       panicFrame.srcdoc = `<!DOCTYPE html><html><head><style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Calibri,Arial,sans-serif;font-size:12px;}
         body{background:#fff;display:flex;flex-direction:column;height:100vh;}

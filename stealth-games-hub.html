@@ -3,117 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stealth Games — 허브</title>
+<title>몰래 게임 — 허브</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: #0a0a0f;
-    color: #e0e0e0;
-    font-family: 'Courier New', monospace;
+    background: #eef7f0;
+    color: #1a2e1a;
+    font-family: Calibri, 'Courier New', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 60px;
+  }
+
+  /* ── 엑셀 스프레드시트 배경 격자 ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(33,115,70,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(33,115,70,0.08) 1px, transparent 1px);
+    background-size: 30px 24px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── 엑셀 상단 툴바 ── */
+  .excel-bar {
+    width: 100%;
+    background: #217346;
+    color: #fff;
+    padding: 5px 16px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .excel-bar .file-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+  .excel-bar .menu-items {
+    display: flex;
+    gap: 14px;
+    opacity: 0.75;
+    font-size: 0.74rem;
+  }
+  .excel-bar .window-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+    opacity: 0.7;
+    font-size: 0.75rem;
+  }
+
+  /* ── 전체 콘텐츠 ── */
+  .content-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 44px 20px 60px;
   }
 
   /* ── Header ── */
-  header { text-align: center; margin-bottom: 60px; }
+  header { text-align: center; margin-bottom: 52px; }
   .logo {
     font-size: 2.8rem;
     font-weight: bold;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #00ff88, #00aaff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
+    letter-spacing: 4px;
+    color: #217346;
+    margin-bottom: 6px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.6);
   }
-  .tagline { color: #555; font-size: 0.85rem; letter-spacing: 3px; }
+  .tagline {
+    color: #6a9e6a;
+    font-size: 0.82rem;
+    letter-spacing: 3px;
+  }
   .divider {
     width: 60px;
-    height: 1px;
-    background: linear-gradient(to right, transparent, #00ff88, transparent);
-    margin: 20px auto 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #217346, transparent);
+    margin: 16px auto 0;
+    opacity: 0.5;
   }
 
   /* ── Grid ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
     width: min(960px, 100%);
-    margin-bottom: 60px;
+    margin-bottom: 52px;
   }
 
-  /* ── Card ── */
+  /* ── Card (엑셀 셀 느낌) ── */
   .game-card {
-    border: 1px solid #1e1e2e;
-    border-radius: 12px;
-    padding: 28px 24px;
-    background: #0d0d18;
-    transition: all 0.25s;
+    border: 1px solid #b8dfc3;
+    border-radius: 8px;
+    padding: 26px 22px;
+    background: #fff;
+    transition: all 0.2s;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 6px rgba(33,115,70,0.06);
   }
-  .game-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--accent1), var(--accent2));
-    opacity: 0;
-    transition: opacity 0.3s;
-    border-radius: inherit;
-    pointer-events: none;
+  .game-card:hover {
+    border-color: #217346;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(33,115,70,0.12);
   }
-  .game-card:hover::before { opacity: 0.04; }
-  .game-card:hover { border-color: var(--accent1); transform: translateY(-3px); }
 
-  .card-icon { font-size: 2.2rem; margin-bottom: 14px; }
+  .card-icon { font-size: 2rem; margin-bottom: 12px; }
   .card-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent1);
-    margin-bottom: 8px;
-  }
-  .card-desc { font-size: 0.82rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
-  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
-  .tag {
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    border: 1px solid #222;
-    border-radius: 4px;
-    color: #555;
     letter-spacing: 1px;
+    color: #217346;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+  .card-desc {
+    font-size: 0.82rem;
+    color: #666;
+    line-height: 1.65;
+    margin-bottom: 18px;
+  }
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tag {
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border: 1px solid #c8e6c9;
+    border-radius: 3px;
+    color: #4a8a5a;
+    background: #f0f9f2;
+    letter-spacing: 0.5px;
   }
 
   .card-btn {
     display: inline-block;
     text-decoration: none;
-    border: 1px solid var(--accent1);
-    color: var(--accent1);
+    background: #217346;
+    color: #fff;
     padding: 8px 18px;
     font-family: inherit;
-    font-size: 0.8rem;
-    letter-spacing: 2px;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
     transition: all 0.2s;
     border-radius: 4px;
+    border: none;
     position: relative;
     z-index: 1;
   }
-  .card-btn:hover { background: #ffffff18; }
-  /* ── Widget Launch ── */
+  .card-btn:hover { background: #185c38; }
+
+  /* ── 위젯 버튼 ── */
   .widget-launch {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 44px;
   }
   .widget-btn {
     background: transparent;
-    border: 1px solid #333;
-    color: #555;
+    border: 1.5px solid #217346;
+    color: #217346;
     padding: 10px 28px;
     font-family: inherit;
     font-size: 0.8rem;
@@ -122,125 +183,172 @@
     border-radius: 4px;
     transition: all .2s;
   }
-  .widget-btn:hover { border-color: #00ff88; color: #00ff88; background: #00ff8811; }
-  .widget-hint { margin-top: 8px; font-size: 0.68rem; color: #2a2a2a; letter-spacing: 1px; }
+  .widget-btn:hover { background: #217346; color: #fff; }
+  .widget-hint { margin-top: 8px; font-size: 0.68rem; color: #aaccaa; letter-spacing: 1px; }
+
+  /* ── 인스타그램 CTA ── */
+  .insta-cta {
+    width: min(500px, 100%);
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    border-radius: 12px;
+    padding: 28px 32px;
+    text-align: center;
+    margin-bottom: 48px;
+    box-shadow: 0 4px 20px rgba(253,29,29,0.15);
+  }
+  .insta-cta .insta-icon { font-size: 2rem; margin-bottom: 8px; }
+  .insta-cta .insta-title {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .insta-cta .insta-desc {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+  }
+  .insta-btn {
+    display: inline-block;
+    text-decoration: none;
+    background: #fff;
+    color: #833ab4;
+    padding: 9px 24px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: all .2s;
+  }
+  .insta-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.04); }
 
   /* ── Footer ── */
   footer {
     text-align: center;
-    color: #333;
-    font-size: 0.75rem;
+    color: #9ab89a;
+    font-size: 0.72rem;
     letter-spacing: 2px;
+    padding-bottom: 24px;
   }
-  footer a { color: #444; text-decoration: none; }
-  footer a:hover { color: #00ff88; }
-
-  /* ── Scanline effect ── */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 999;
-  }
+  footer a { color: #6a9e6a; text-decoration: none; }
+  footer a:hover { color: #217346; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Stealth Games</div>
-  <p class="tagline">작고 · 조용하게 · 즐기는 브라우저 게임</p>
-  <div class="divider"></div>
-</header>
-
-<div class="grid">
-
-  <!-- Mini Pet -->
-  <div class="game-card" style="--accent1:#ff88cc;--accent2:#cc5599;">
-    <div class="card-icon">🐾</div>
-    <div class="card-title">Mini Pet</div>
-    <div class="card-desc">
-      닉네임으로 저장되고 창을 닫아도 살아있어요.
-      강아지 · 고양이 · 곰 중 선택. P키로 즉시 숨기기.
-    </div>
-    <div class="card-tags">
-      <span class="tag">펫</span>
-      <span class="tag">방치형</span>
-      <span class="tag">스텔스</span>
-    </div>
-    <a class="card-btn" href="mini-pet.html" style="--accent1:#ff88cc;">바로 플레이</a>
-  </div>
-
-  <!-- Pet Jump -->
-  <div class="game-card" style="--accent1:#aa44ff;--accent2:#7722cc;">
-    <div class="card-icon">🦘</div>
-    <div class="card-title">Pet Jump</div>
-    <div class="card-desc">
-      내 펫이 직접 뛰는 점프 게임. 펫의 에너지는 점프력에, 행복도는 속도에 영향을 줘요.
-    </div>
-    <div class="card-tags">
-      <span class="tag">달리기</span>
-      <span class="tag">반사신경</span>
-      <span class="tag">연동</span>
-    </div>
-    <a class="card-btn" href="pet-jump.html" style="--accent1:#aa44ff;">바로 플레이</a>
-  </div>
-
-  <!-- Mini 2048 -->
-  <div class="game-card" style="--accent1:#ffaa00;--accent2:#cc8800;">
-    <div class="card-icon">🔲</div>
-    <div class="card-title">Mini 2048</div>
-    <div class="card-desc">
-      타일을 합쳐서 2048을 만들어요. 화살표 키 또는 스와이프로 조작. 최고 점수 자동 저장.
-    </div>
-    <div class="card-tags">
-      <span class="tag">퍼즐</span>
-      <span class="tag">전략</span>
-      <span class="tag">클래식</span>
-    </div>
-    <a class="card-btn" href="mini-2048.html" style="--accent1:#ffaa00;">바로 플레이</a>
-  </div>
-
-  <!-- Slot Machine -->
-  <div class="game-card" style="--accent1:#ffaa00;--accent2:#cc8800;">
-    <div class="card-icon">🎰</div>
-    <div class="card-title">Slot Machine</div>
-    <div class="card-desc">
-      슬롯을 돌려서 목표 코인을 기록하지 못하면 게임이 끝나요. 두 개 일치 시 세 번째 릴이 천천히 돌아가는 심리전.
-    </div>
-    <div class="card-tags">
-      <span class="tag">운</span>
-      <span class="tag">방치형</span>
-      <span class="tag">스텔스</span>
-    </div>
-    <a class="card-btn" href="slot-machine.html" style="--accent1:#ffaa00;">바로 플레이</a>
-  </div>
-
-
+<!-- 엑셀 툴바 -->
+<div class="excel-bar">
+  <span class="file-name">📊 업무보고_최종.xlsx</span>
+  <span class="menu-items">
+    <span>파일</span><span>홈</span><span>삽입</span>
+    <span>페이지 레이아웃</span><span>수식</span><span>데이터</span>
+  </span>
+  <span class="window-btns">─ &nbsp; □ &nbsp; ✕</span>
 </div>
 
-<div class="widget-launch">
-  <button class="widget-btn" onclick="openWidget()">위젯으로 열기 ↗</button>
-  <p class="widget-hint">360×580 팝업 · 4개 게임 탭</p>
-</div>
+<div class="content-wrap">
 
-<footer>
-  <p>모든 게임은 브라우저에서 바로 실행돼요. 설치 불필요.</p>
-  <p style="margin-top:8px;"><a href="https://github.com/korea96522/molgame">GitHub</a></p>
-</footer>
+  <header>
+    <div class="logo">몰래 게임</div>
+    <p class="tagline">일하는 척 · 쉬는 척 · 즐기는 척</p>
+    <div class="divider"></div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Mini Pet -->
+    <div class="game-card">
+      <div class="card-icon">🐾</div>
+      <div class="card-title">Mini Pet</div>
+      <div class="card-desc">
+        닉네임으로 저장되고 창을 닫아도 살아있어요.
+        강아지 · 고양이 · 곰 중 선택. P키로 즉시 숨기기.
+      </div>
+      <div class="card-tags">
+        <span class="tag">펫</span>
+        <span class="tag">방치형</span>
+        <span class="tag">스텔스</span>
+      </div>
+      <a class="card-btn" href="mini-pet.html">바로 플레이</a>
+    </div>
+
+    <!-- Pet Jump -->
+    <div class="game-card">
+      <div class="card-icon">🦘</div>
+      <div class="card-title">Pet Jump</div>
+      <div class="card-desc">
+        내 펫이 직접 뛰는 점프 게임. 펫의 에너지는 점프력에, 행복도는 속도에 영향을 줘요.
+      </div>
+      <div class="card-tags">
+        <span class="tag">달리기</span>
+        <span class="tag">반사신경</span>
+        <span class="tag">연동</span>
+      </div>
+      <a class="card-btn" href="pet-jump.html">바로 플레이</a>
+    </div>
+
+    <!-- Mini 2048 -->
+    <div class="game-card">
+      <div class="card-icon">🔲</div>
+      <div class="card-title">Mini 2048</div>
+      <div class="card-desc">
+        타일을 합쳐서 2048을 만들어요. 화살표 키 또는 스와이프로 조작. 최고 점수 자동 저장.
+      </div>
+      <div class="card-tags">
+        <span class="tag">퍼즐</span>
+        <span class="tag">전략</span>
+        <span class="tag">클래식</span>
+      </div>
+      <a class="card-btn" href="mini-2048.html">바로 플레이</a>
+    </div>
+
+    <!-- Slot Machine -->
+    <div class="game-card">
+      <div class="card-icon">🎰</div>
+      <div class="card-title">Slot Machine</div>
+      <div class="card-desc">
+        슬롯을 돌려서 목표 코인을 기록하지 못하면 게임이 끝나요. 두 개 일치 시 세 번째 릴이 천천히 돌아가는 심리전.
+      </div>
+      <div class="card-tags">
+        <span class="tag">운</span>
+        <span class="tag">방치형</span>
+        <span class="tag">스텔스</span>
+      </div>
+      <a class="card-btn" href="slot-machine.html">바로 플레이</a>
+    </div>
+
+  </div>
+
+  <div class="widget-launch">
+    <button class="widget-btn" onclick="openWidget()">위젯으로 열기 ↗</button>
+    <p class="widget-hint">360×580 팝업 · 4개 게임 탭</p>
+  </div>
+
+  <!-- 인스타그램 CTA -->
+  <div class="insta-cta">
+    <div class="insta-icon">📸</div>
+    <p class="insta-title">새 게임 업데이트 소식</p>
+    <p class="insta-desc">인스타그램에서 팔로우하면 새 게임 알림을 받을 수 있어요</p>
+    <!-- 아래 링크의 계정명을 본인 인스타 아이디로 바꿔주세요 -->
+    <a class="insta-btn" href="https://instagram.com/mollae.game" target="_blank" rel="noopener">
+      @mollae.game 팔로우 ♥
+    </a>
+  </div>
+
+  <footer>
+    <p>모든 게임은 브라우저에서 바로 실행돼요. 설치 불필요.</p>
+    <p style="margin-top:6px;"><a href="https://github.com/korea96522/molgame">GitHub</a></p>
+  </footer>
+
+</div>
 
 <script>
 function openWidget() {
   window.open(
     'widget.html',
-    'stealth_widget',
+    'mollae_widget',
     'width=360,height=600,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,resizable=1'
   );
 }

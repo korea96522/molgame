@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Stealth Games Widget</title>
+<title>몰래 게임 Widget</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -23,6 +23,13 @@ html, body {
   background: #0d0d18;
   border-bottom: 1px solid #1a1a2e;
   user-select: none;
+  transition: height 0.15s, opacity 0.15s;
+  overflow: hidden;
+}
+#tabs.hidden {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .tab {
   flex: 1;
@@ -76,11 +83,10 @@ iframe {
   position: absolute;
   top: 0;
   left: 0;
-  width: 360px;
-  height: 540px;
+  width: 100%;
+  height: 100%;
   border: none;
   display: none;
-  transform-origin: top left;
 }
 iframe.active { display: block; }
 
@@ -127,12 +133,12 @@ const SRCS = [
   'slot-machine.html?widget=1',
 ];
 
-const tabs    = document.querySelectorAll('.tab:not(#btn-popout)');
-const frames  = [0,1,2,3].map(i => document.getElementById('f'+i));
-const loaders = [0,1,2,3].map(i => document.getElementById('loading-'+i));
+const tabsEl   = document.getElementById('tabs');
+const tabs     = document.querySelectorAll('.tab:not(#btn-popout)');
+const frames   = [0,1,2,3].map(i => document.getElementById('f'+i));
+const loaders  = [0,1,2,3].map(i => document.getElementById('loading-'+i));
 let current = 0;
 
-// Hide loader when iframe loads
 frames.forEach((fr, i) => {
   fr.addEventListener('load', () => {
     if (loaders[i]) loaders[i].style.display = 'none';
@@ -145,36 +151,34 @@ function switchTab(i) {
   frames[current].classList.remove('active');
   current = i;
   tabs[i].classList.add('active');
-  // Lazy-load: set src on first visit
   if (!frames[i].src || frames[i].src === location.href) {
     frames[i].src = SRCS[i];
   }
   frames[i].classList.add('active');
-  // Route keyboard events into the active game
   setTimeout(() => frames[i].focus(), 80);
 }
 
 function popout() {
   window.open(
     'widget.html',
-    'stealth_widget',
+    'mollae_widget',
     'width=360,height=600,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,resizable=1'
   );
 }
 
-// ── RESPONSIVE SCALING ──
-// Games are designed at 360×540. Scale to fit the actual frame area.
-function scaleFrames() {
-  const availW = document.getElementById('frames').clientWidth;
-  const availH = document.getElementById('frames').clientHeight;
-  const scale = Math.min(availW / 360, availH / 540);
-  frames.forEach(f => {
-    f.style.transform = `scale(${scale})`;
-  });
+// ── 탭바 자동 숨김: 높이가 작아지면 탭 숨기고 게임 풀스크린 ──
+const TAB_HEIGHT_THRESHOLD = 320;
+
+function updateTabVisibility() {
+  if (window.innerHeight < TAB_HEIGHT_THRESHOLD) {
+    tabsEl.classList.add('hidden');
+  } else {
+    tabsEl.classList.remove('hidden');
+  }
 }
 
-window.addEventListener('resize', scaleFrames);
-scaleFrames();
+window.addEventListener('resize', updateTabVisibility);
+updateTabVisibility();
 </script>
 </body>
 </html>
