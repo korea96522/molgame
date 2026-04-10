@@ -15,8 +15,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px 12px;
   user-select: none;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -275,7 +276,9 @@ if (IS_WIDGET) document.body.classList.add('widget');
 
 // ── CONSTANTS ──
 const SIZE = 4;
-const CELL = IS_WIDGET ? 60 : 72;
+// 모바일 화면 크기에 맞게 셀 크기 자동 계산
+const maxBoard = Math.min(window.innerWidth - 24, 320);
+const CELL = IS_WIDGET ? 60 : Math.floor((maxBoard - 24) / 4);
 const GAP  = IS_WIDGET ? 6  : 8;
 const PAD  = IS_WIDGET ? 6  : 8;
 
@@ -286,6 +289,13 @@ let best  = parseInt(localStorage.getItem('2048_best') || '0');
 let moved = false;
 let won   = false;
 let dead  = false;
+
+// 셀 크기 CSS 동적 적용 (모바일 대응)
+if (!IS_WIDGET) {
+  const style = document.createElement('style');
+  style.textContent = `.cell-bg { width:${CELL}px; height:${CELL}px; } .tile { width:${CELL}px; height:${CELL}px; }`;
+  document.head.appendChild(style);
+}
 
 // ── INIT ──
 function newGame() {

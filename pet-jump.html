@@ -14,7 +14,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 20px;
+  padding: 20px 12px;
+  overflow-x: hidden;
 }
 h1 {
   font-size: 1.8rem;
@@ -65,10 +66,13 @@ input[type=text]:focus { border-color: #00aaff55; }
 
 #game-canvas {
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
   border: 1px solid #1a1a2e;
   border-radius: 8px;
   display: block;
   cursor: pointer;
+  max-width: 100%;
+  height: auto;
 }
 
 #msg {
@@ -279,6 +283,7 @@ function doJump() {
 }
 
 CV.addEventListener('click', doJump);
+CV.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive: false });
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
 });

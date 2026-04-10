@@ -15,6 +15,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-x: hidden;
   }
 
   /* ── 엑셀 스프레드시트 배경 격자 ── */
@@ -223,6 +224,16 @@
     transition: all .2s;
   }
   .insta-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.04); }
+
+  /* ── 모바일 ── */
+  @media (max-width: 520px) {
+    .excel-bar .menu-items { display: none; }
+    .logo { font-size: 2rem; letter-spacing: 2px; }
+    .content-wrap { padding: 28px 14px 48px; }
+    .grid { gap: 12px; }
+    .game-card { padding: 20px 16px; }
+    .insta-cta { padding: 22px 18px; }
+  }
 
   /* ── Footer ── */
   footer {
